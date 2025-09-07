@@ -117,7 +117,7 @@ public class chasisControlWithDashSep06 extends OpMode {
 
         panelsTelemetry.update();
 
-        // Driver station telemetry
+        // Driver Station telemetry
         telemetry.addData("LB Power", leftBackPower);
         telemetry.addData("LF Power", leftFrontPower);
         telemetry.addData("RF Power", rightFrontPower);
