@@ -102,7 +102,7 @@ public class chasisControlWithDashSep06 extends OpMode {
     }
 
     private void updateTelemetry() {
-        // Panels telemetry
+        // Panels Telemetry
         panelsTelemetry.debug("Joystick Active", joystickActive);
         panelsTelemetry.debug("Strafe", strafe);
         panelsTelemetry.debug("Forward", forward);
