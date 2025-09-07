@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@TeleOp(name = "Sep06", group = "Teleop")
+@TeleOp(name = "Working Chasis with Panels", group = "Teleop")
 public class chasisControlWithDashSep06 extends OpMode {
     private RobotHardware robot;
 
