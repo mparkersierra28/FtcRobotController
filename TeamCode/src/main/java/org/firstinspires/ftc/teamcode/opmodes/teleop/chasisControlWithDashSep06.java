@@ -18,6 +18,7 @@ public class chasisControlWithDashSep06 extends OpMode {
     private TelemetryManager panelsTelemetry;
 
     // Configurable variables (show up in Panels UI and are live-tunable)
+    public static boolean detailedPanels = false;
 
     public static double SPEED_MULTIPLIER = 1.0;    // 0.1 to 1.0
 
@@ -103,12 +104,14 @@ public class chasisControlWithDashSep06 extends OpMode {
 
     private void updateTelemetry() {
         // Panels telemetry
-        panelsTelemetry.debug("Joystick Active", joystickActive);
-        panelsTelemetry.debug("Strafe", strafe);
-        panelsTelemetry.debug("Forward", forward);
-        panelsTelemetry.debug("Rotate", rotate);
-        panelsTelemetry.debug("Speed Multiplier", SPEED_MULTIPLIER);
-        panelsTelemetry.debug("Deadzone", DEADZONE);
+        if (detailedPanels) {
+            panelsTelemetry.debug("Joystick Active", joystickActive);
+            panelsTelemetry.debug("Strafe", strafe);
+            panelsTelemetry.debug("Forward", forward);
+            panelsTelemetry.debug("Rotate", rotate);
+            panelsTelemetry.debug("Speed Multiplier", SPEED_MULTIPLIER);
+            panelsTelemetry.debug("Deadzone", DEADZONE);
+        }
 
         panelsTelemetry.debug("LB Power", leftBackPower);
         panelsTelemetry.debug("LF Power", leftFrontPower);
