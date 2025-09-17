@@ -43,6 +43,8 @@ public class LineExample extends OpMode {
     public void init() {
         // Runs once when the OpMode is initialized.
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        System.out.println("We just initialized the OpMode!");
     }
 
 
