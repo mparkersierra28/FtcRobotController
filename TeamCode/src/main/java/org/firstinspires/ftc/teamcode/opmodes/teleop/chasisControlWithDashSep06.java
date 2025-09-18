@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
@@ -63,7 +65,7 @@ public class chasisControlWithDashSep06 extends OpMode {
 
         double leftY = gamepad1.left_stick_y;
         double rightY = gamepad1.right_stick_y;
-        forward = leftY + rightY;
+        forward = -(leftY + rightY);
         forward = Range.clip(forward, -1.0, 1.0);
 
         // Deadzone check
@@ -72,34 +74,70 @@ public class chasisControlWithDashSep06 extends OpMode {
                 Math.abs(rotate) > DEADZONE;
 
         if (joystickActive) {
-            // Mecanum formula
-            leftBackPower = (forward + strafe - rotate) * SPEED_MULTIPLIER;
-            leftFrontPower = (forward - strafe - rotate) * SPEED_MULTIPLIER;
-            rightFrontPower = (forward + strafe + rotate) * SPEED_MULTIPLIER;
-            rightBackPower = (forward - strafe + rotate) * SPEED_MULTIPLIER;
-
-            // Clip
-            leftBackPower = Range.clip(leftBackPower, -1.0, 1.0);
-            leftFrontPower = Range.clip(leftFrontPower, -1.0, 1.0);
-            rightFrontPower = Range.clip(rightFrontPower, -1.0, 1.0);
-            rightBackPower = Range.clip(rightBackPower, -1.0, 1.0);
-
-            // Apply to motors
-            robot.lb.setPower(leftBackPower);
-            robot.lf.setPower(leftFrontPower);
-            robot.rf.setPower(rightFrontPower);
-            robot.rb.setPower(rightBackPower);
+            if (FIELD_CENTRIC) {
+                fieldCentricDrive(strafe, forward, rotate);
+            } else {
+                robotCentricDrive(strafe, forward, rotate);
+            }
         } else {
-            robot.lb.setPower(0);
-            robot.lf.setPower(0);
-            robot.rf.setPower(0);
-            robot.rb.setPower(0);
-
             leftBackPower = 0;
             leftFrontPower = 0;
             rightFrontPower = 0;
             rightBackPower = 0;
+
+            applyMotorPowers();
         }
+    }
+    private void robotCentricDrive(double strafe, double forward, double rotate) {
+        // Standard mecanum drive (no heading correction)
+        leftBackPower = (forward - strafe + rotate) * SPEED_MULTIPLIER;
+        leftFrontPower = (forward + strafe + rotate) * SPEED_MULTIPLIER;
+        rightFrontPower = (forward - strafe - rotate) * SPEED_MULTIPLIER;
+        rightBackPower = (forward + strafe - rotate) * SPEED_MULTIPLIER;
+
+        applyMotorPowers();
+    }
+
+    private void fieldCentricDrive(double strafe, double forward, double rotate) {
+        // --- Update odometry and get heading in radians ---
+        robot.odo.update();
+        Pose2D robotPosition = robot.odo.getPosition();
+        double headingRad = robotPosition.getHeading(AngleUnit.RADIANS);
+
+        // --- Rotate joystick vector by -heading (field -> robot coords) ---
+        double cosA = Math.cos(-headingRad);
+        double sinA = Math.sin(-headingRad);
+
+        double x = strafe * cosA - forward * sinA;  // robot-centric strafe
+        double y = strafe * sinA + forward * cosA;  // robot-centric forward
+
+        // --- Standard mecanum wheel power equations ---
+        leftFrontPower  = (y + x + rotate) * SPEED_MULTIPLIER;
+        rightFrontPower = (y - x - rotate) * SPEED_MULTIPLIER;
+        leftBackPower   = (y - x + rotate) * SPEED_MULTIPLIER;
+        rightBackPower  = (y + x - rotate) * SPEED_MULTIPLIER;
+
+        // Apply to motors
+        applyMotorPowers();
+    }
+
+
+
+
+    private void applyMotorPowers() {
+        // Normalize if any power is > 1
+        double max = Math.max(1.0, Math.max(Math.abs(leftFrontPower), Math.max(Math.abs(rightFrontPower),
+                Math.max(Math.abs(leftBackPower), Math.abs(rightBackPower)))));
+        leftFrontPower  /= max;
+        rightFrontPower /= max;
+        leftBackPower   /= max;
+        rightBackPower  /= max;
+
+        // Send to motors
+        robot.lb.setPower(leftBackPower);
+        robot.lf.setPower(leftFrontPower);
+        robot.rf.setPower(rightFrontPower);
+        robot.rb.setPower(rightBackPower);
     }
 
     private void updateTelemetry() {
@@ -118,7 +156,7 @@ public class chasisControlWithDashSep06 extends OpMode {
         panelsTelemetry.debug("RF Power", rightFrontPower);
         panelsTelemetry.debug("RB Power", rightBackPower);
 
-        panelsTelemetry.update();
+        panelsTelemetry.update(telemetry);
 
         // Driver Station telemetry
         telemetry.addData("LB Power", leftBackPower);
