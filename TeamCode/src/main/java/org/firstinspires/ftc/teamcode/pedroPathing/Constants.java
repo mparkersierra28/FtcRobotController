@@ -1,3 +1,4 @@
+//llalalalalalalalalaaaaaa
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
 import com.pedropathing.control.FilteredPIDFCoefficients;
@@ -43,7 +44,7 @@ public class Constants {
             .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .xVelocity(61.5) //changes with weight
-            .yVelocity(56); //changes with weight
+            .yVelocity(56); //Changes with weight
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(7.5)
