@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous (name = "Line Pedro Example", group = "Examples")
+@Autonomous (name = "First Pedro")
 public class firstPedro extends OpMode {
 
     // The distance (in inches, cm, or your chosen unit depending on your config)
@@ -55,15 +55,11 @@ public class firstPedro extends OpMode {
     @Override
     public void init_loop() {
         telemetryM.debug("This will activate all the PIDF(s)");
-        telemetryM.debug("The robot will go forward and backward continuously along the path while correcting.");
         telemetryM.debug("You can adjust the PIDF values to tune the robot's drive PIDF(s).");
         telemetryM.update(telemetry);
 
         // Update the follower so it can do things like odometry updates before the match starts.
         follower.update();
-
-        // Draw the current robot position on the field visualization.
-        drawCurrent();
     }
 
 
