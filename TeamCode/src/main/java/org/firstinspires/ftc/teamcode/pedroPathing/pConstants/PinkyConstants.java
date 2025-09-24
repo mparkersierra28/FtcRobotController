@@ -48,7 +48,7 @@ public class PinkyConstants {
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(7.5)
-            .strafePodX(2)
+            .strafePodX(7.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("odo")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

@@ -29,7 +29,7 @@ public class RobotHardware {
     private HardwareMap hw;
 
     // Motors
-    public DcMotor lf, rf, lb, rb;
+    public DcMotor lf, rf, lb, rb, launcherR, launcherL;
     public GoBildaPinpointDriver odo;
 
     // Current robot type

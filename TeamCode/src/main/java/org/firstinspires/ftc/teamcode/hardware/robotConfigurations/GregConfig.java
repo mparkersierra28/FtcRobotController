@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware.robotConfigurations;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -16,6 +17,7 @@ public class GregConfig {
 
 
         // === Odometry ===
+        /*
         robot.odo = hw.get(GoBildaPinpointDriver.class, "odo");
         robot.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         robot.odo.setEncoderDirections(
@@ -23,5 +25,9 @@ public class GregConfig {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
         robot.odo.setOffsets(7.5, 2, DistanceUnit.INCH);
+        */
+        robot.launcherR = hw.get(DcMotor.class, "launcherR");
+        robot.launcherL = hw.get(DcMotor.class, "launcherL");
+        robot.launcherL.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 }
