@@ -87,7 +87,7 @@ public class firstPedro extends OpMode {
         follower.update();
 
         if (!follower.isBusy()) {
-            int tend = 1/0;
+            requestOpModeStop();
         }
 
     }
