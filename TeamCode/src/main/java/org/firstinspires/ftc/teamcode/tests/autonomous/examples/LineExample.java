@@ -18,6 +18,8 @@ import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
+
 @Configurable
 @Autonomous (name = "Line Pedro Example", group = "Examples")
 public class LineExample extends OpMode {
@@ -43,6 +45,12 @@ public class LineExample extends OpMode {
     public void init() {
         // Runs once when the OpMode is initialized.
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        // Initialize the robot hardware class
+        RobotHardware robot = new RobotHardware();
+        robot.init(hardwareMap);
+        // Make sure follower has the correct constants
+        follower = robot.setPedroConstants();
     }
 
 

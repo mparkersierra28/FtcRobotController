@@ -37,18 +37,35 @@ public class chasisControlWithDashSep06 extends OpMode {
     private double rightFrontPower = 0;
     private double rightBackPower = 0;
 
+    // Helps create a toggle for A
+    boolean aPressed;
+
     @Override
     public void init() {
         // Initialize robot hardware
         robot = new RobotHardware();
         robot.init(hardwareMap);
+        robot.setRobotConfig();
 
         // Initialize Panels + telemetry
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         telemetry.addData("Status", "Initialized - Panels Connected");
     }
+    @Override
+    public void init_loop() {
+        // Toggle field-centric mode with gamepad1.a
+        if (gamepad1.a && !aPressed) {
+            FIELD_CENTRIC = !FIELD_CENTRIC;
+            aPressed = true; // lock until released
+        } else if (!gamepad1.a) {
+            aPressed = false; // allow future toggles
+        }
 
+        telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
+        telemetry.addLine("Press A to toggle");
+        telemetry.update();
+    }
     @Override
     public void loop() {
         // Handle driving

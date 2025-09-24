@@ -1,5 +1,4 @@
-//llalalalalalalalalaaaaaa
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.pedroPathing.pConstants;
 
 import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
@@ -16,7 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
-public class Constants {
+public class GiveItANameConstants {
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             //changes with weight
@@ -37,12 +36,12 @@ public class Constants {
     public static MecanumConstants driveConstants = new MecanumConstants()
             .leftFrontMotorName("LF")
             .leftRearMotorName("LB")
-            .rightFrontMotorName("RF")
+            .rightFrontMotorName("giveitaname")
             .rightRearMotorName("RB")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(61.5) //changes with weight
             .yVelocity(56); //Changes with weight
 
