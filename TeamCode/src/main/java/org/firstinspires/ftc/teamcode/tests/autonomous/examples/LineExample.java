@@ -47,8 +47,7 @@ public class LineExample extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize the robot hardware class
-        RobotHardware robot = new RobotHardware();
-        robot.init(hardwareMap);
+        RobotHardware robot = new RobotHardware(hardwareMap);
         // Make sure follower has the correct constants
         follower = robot.setPedroConstants();
     }
@@ -68,9 +67,6 @@ public class LineExample extends OpMode {
 
         // Update the follower so it can do things like odometry updates before the match starts.
         follower.update();
-
-        // Draw the current robot position on the field visualization.
-        drawCurrent();
     }
 
 
@@ -110,9 +106,6 @@ public class LineExample extends OpMode {
     public void loop() {
         // Update the follower so it can compute motor powers and drive the robot.
         follower.update();
-
-        // Draw the robot’s current position and path history on the field visualization.
-        drawCurrentAndHistory();
 
         // Check if the robot has finished following its current path.
         if (!follower.isBusy()) {

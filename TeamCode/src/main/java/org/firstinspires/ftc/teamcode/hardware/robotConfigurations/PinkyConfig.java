@@ -22,6 +22,6 @@ public class PinkyConfig {
                 GoBildaPinpointDriver.EncoderDirection.REVERSED,
                 GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
-        robot.odo.setOffsets(7.5, 2, DistanceUnit.INCH);
+        robot.odo.setOffsets(-7.5, -7.5, DistanceUnit.INCH);
     }
 }

@@ -40,8 +40,7 @@ public class firstPedro extends OpMode {
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize the robot hardware class
-        RobotHardware robot = new RobotHardware();
-        robot.init(hardwareMap);
+        RobotHardware robot = new RobotHardware(hardwareMap);
         // Make sure follower has the correct constants
         follower = robot.setPedroConstants();
     }

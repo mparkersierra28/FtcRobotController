@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.robotConfigurations.GiveItANameConfig;
 import org.firstinspires.ftc.teamcode.hardware.robotConfigurations.GregConfig;
@@ -30,12 +30,14 @@ public class RobotHardware {
 
     // Motors
     public DcMotor lf, rf, lb, rb, launcherR, launcherL;
+    public CRServo lastS;
+    public CRServo LastS;
     public GoBildaPinpointDriver odo;
 
     // Current robot type
     private RobotType robotType;
 
-    public void init(HardwareMap hw) {
+    public RobotHardware(HardwareMap hw) {
         this.hw = hw;
 
         // Detect robot type based on servo name

@@ -43,8 +43,7 @@ public class chasisControlWithDashSep06 extends OpMode {
     @Override
     public void init() {
         // Initialize robot hardware
-        robot = new RobotHardware();
-        robot.init(hardwareMap);
+        robot = new RobotHardware(hardwareMap);
         robot.setRobotConfig();
 
         // Initialize Panels + telemetry

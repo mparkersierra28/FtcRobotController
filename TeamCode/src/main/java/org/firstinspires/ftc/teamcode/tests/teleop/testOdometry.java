@@ -24,8 +24,7 @@ public class testOdometry extends OpMode {
 
     @Override
     public void init() {
-        robot = new RobotHardware();
-        robot.init(hardwareMap);
+        robot = new RobotHardware(hardwareMap);
 
         panels = PanelsTelemetry.INSTANCE.getTelemetry();;
 

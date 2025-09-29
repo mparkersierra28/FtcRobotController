@@ -20,8 +20,7 @@ public class DistanceTracker extends OpMode {
 
     @Override
     public void init() {
-        RobotHardware robot = new RobotHardware();
-        robot.init(hardwareMap);
+        RobotHardware robot = new RobotHardware(hardwareMap);
         // Initialize PedroPathing follower
         follower = robot.setPedroConstants();
 

@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.hardware.robotConfigurations;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -29,5 +31,8 @@ public class GregConfig {
         robot.launcherR = hw.get(DcMotor.class, "launcherR");
         robot.launcherL = hw.get(DcMotor.class, "launcherL");
         robot.launcherL.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        robot.lastS = hw.get(CRServo.class, "lastS");
+        robot.LastS = hw.get(CRServo.class, "LastS");
     }
 }
