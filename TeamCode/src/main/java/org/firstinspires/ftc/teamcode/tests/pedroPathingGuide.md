@@ -1,126 +1,102 @@
-## Imports Overview
+# 🚀 Getting Started with PedroPathing (2.0.0+)
 
-## Follower
-import com.pedropathing.follower.Follower;
+PedroPathing is a path-planning and following library for FTC robots.  
+This guide walks you through **setup → path creation → following paths → debugging**.
 
-Purpose: Core class that ties your robot hardware to the pathing system.
+---
 
-Responsibilities:
-Track the robot’s current position (via Pose or encoders).
-Follow paths defined with Path, BezierCurve, or BezierLine.
-Provide utility functions like update() and telemetryDebug().
+## 1. Setup the Follower
 
-Usage:
-Follower follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
-follower.followPath(myPathChain);
-follower.update();  // call in loop
+The **Follower** is the brain that tracks your robot’s position and follows paths.
 
-## Pose
-import com.pedropathing.localization.Pose;
+```java
+// Create follower using your Constants class
+Follower follower = Constants.createFollower(hardwareMap);
 
-Purpose: Represents the robot’s position and heading.
+/* *** Important */
+/* Since we have different robots and different constants for each one run this instead */
+// Initialize the robot hardware class
+RobotHardware robot = new RobotHardware(hardwareMap);
+// Make sure follower has the correct constants (Automatic)
+follower = robot.setPedroConstants();
 
-Fields:
-x, y (position in inches)
-heading (radians)
 
-Usage: Can be used to track current robot state or set start position for paths.
-Pose start = new Pose(0, 0, 0); // x=0, y=0, heading=0
-follower.setPose(start);
+// Set your starting position on the field
+follower.setStartingPose(new Pose(0, 0, 0)); // x=0, y=0, heading=0 radians
+```
 
-## BezierCurve
-import com.pedropathing.pathgen.BezierCurve;
+Call `follower.update();` in your OpMode loop to keep it running.
 
-Purpose: Defines a smooth curved path between a start, control, and end point.
+---
 
-Usage: Creates curved trajectories that are smoother than straight lines.
-BezierCurve curve = new BezierCurve(
-new Point(0, 0, Point.CARTESIAN),
-new Point(10, 0, Point.CARTESIAN),  // control point
-new Point(10, 10, Point.CARTESIAN)  // end point
+## 2. Create Paths
+
+PedroPathing supports **lines** and **curves**.  
+Each path segment connects Poses (x, y, heading).
+
+### Straight Line Path
+```java
+Path line = new Path(
+    new BezierLine(new Pose(0, 0, 0), new Pose(24, 0, 0))
 );
+```
+This moves from `(0,0)` to `(24,0)`.
 
-## BezierLine
-
-import com.pedropathing.pathgen.BezierLine;
-
-Purpose: Special type of curve; essentially a straight line using Bezier math.
-
-Usage: Useful for consistent API with BezierCurve when all paths are built with curves.
-BezierLine line = new BezierLine(
-new Point(0,0, Point.CARTESIAN),
-new Point(10,0, Point.CARTESIAN)
+### Curved Path
+```java
+Path curve = new Path(
+    new BezierCurve(
+        new Pose(24, 0, 0),     // start
+        new Pose(36, 12, 0),    // control point
+        new Pose(48, 0, 0)      // end
+    )
 );
+```
+This creates a smooth curve instead of a sharp turn.
 
-## Path
-import com.pedropathing.pathgen.Path;
+---
 
-Purpose: A single path segment that can be followed by Follower.
+## 3. Chain Paths Together
 
-Can be a BezierCurve or BezierLine.
+Instead of following one segment at a time, you can build a chain.
 
-## PathChain
-import com.pedropathing.pathgen.PathChain;
+```java
+PathChain chain = follower.pathBuilder()
+    .addPath(new BezierLine(new Pose(0, 0, 0), new Pose(24, 0, 0)))
+    .addPath(new BezierCurve(new Pose(24, 0, 0),
+                             new Pose(36, 12, 0),
+                             new Pose(48, 0, 0)))
+    .build();
+```
 
-Purpose: Combines multiple Path objects into a sequence.
+---
 
-Usage:
-PathChain myChain = new PathChain();
-myChain.addPath(curve1);
-myChain.addPath(line1);
-follower.followPath(myChain);
+## 4. Make the Robot Follow
 
-## Point
-import com.pedropathing.pathgen.Point;
+Tell the follower to follow your path or chain:
 
-Purpose: Defines a position in a 2D plane (x, y) and optional heading.
+```java
+follower.followPath(chain);
+```
 
-Types:
-Point.CARTESIAN – standard x/y in inches.
-Point.POLAR – (distance, angle) relative to a reference.
-
-Usage:
-Point start = new Point(0,0, Point.CARTESIAN);
-Point end = new Point(10, 10, Point.CARTESIAN);
-
-## Timer
-import com.pedropathing.util.Timer;
-
-Purpose: Utility class for timing events in autonomous.
-
-Usage:
-Timer timer = new Timer();
-timer.start();
-if(timer.seconds() > 2) {
-// do something after 2 seconds
+In your loop:
+```java
+@Override
+public void loop() {
+    follower.update();
+    follower.telemetryDebug(telemetry); // see pose + debug info
 }
+```
 
-## Constants
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.FConstants;
-import org.firstinspires.ftc.teamcode.pedroPathing.constants.LConstants;
-FConstants: Robot physical constants (track width, wheel radius, etc.).
-LConstants: Follower tuning parameters (PID gains, max velocity/acceleration).
-Usage: Passed to Follower on initialization.
-@Autonomous(name="ExampleAuto", group="PedroPathing")
-public class ExampleAuto extends OpMode {
-private Follower follower;
-private PathChain path;
+The robot will move along the path until done.
 
-    @Override
-    public void init() {
-        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
+---
 
-        path = follower.pathBuilder()
-            .addPath(new BezierLine(new Point(0,0, Point.CARTESIAN), new Point(24,0, Point.CARTESIAN)))
-            .addPath(new BezierCurve(new Point(24,0, Point.CARTESIAN), new Point(36,12, Point.CARTESIAN), new Point(48,0, Point.CARTESIAN)))
-            .build();
+## 5. Detect When a Path is Done
 
-        follower.followPath(path);
-    }
-
-    @Override
-    public void loop() {
-        follower.update();
-        follower.telemetryDebug(telemetry);
-    }
+You can check if the robot is finished:
+```java
+if (!follower.isBusy()) {
+    // Path finished — do next action
 }
+```

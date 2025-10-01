@@ -12,10 +12,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@TeleOp(name = "Working Chasis with Panels", group = "Teleop")
-public class chasisControlWithDashSep06 extends OpMode {
+@TeleOp(name = "Pure Full Chasis", group = "Teleop")
+public class pureChasisRobotAndFieldCentric extends OpMode {
     private RobotHardware robot;
-
     // Panels instance + telemetry
     private TelemetryManager panelsTelemetry;
 
