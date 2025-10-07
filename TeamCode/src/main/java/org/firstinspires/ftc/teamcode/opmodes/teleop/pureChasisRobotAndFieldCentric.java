@@ -37,7 +37,7 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
     private double rightBackPower = 0;
 
     // Helps create a toggle for A
-    boolean aPressed;
+    boolean aPressed = false;
 
     @Override
     public void init() {

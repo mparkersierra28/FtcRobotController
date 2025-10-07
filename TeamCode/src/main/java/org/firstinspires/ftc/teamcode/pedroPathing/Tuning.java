@@ -80,8 +80,7 @@ public class Tuning extends SelectableOpMode {
     @Override
     public void onSelect() {
         // Initialize the robot hardware class
-        RobotHardware robot = new RobotHardware();
-        robot.init(hardwareMap);
+        RobotHardware robot = new RobotHardware(hardwareMap);
         if (follower == null) {
             // Make sure follower has the correct constants
             follower = robot.setPedroConstants();

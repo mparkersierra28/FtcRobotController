@@ -67,8 +67,7 @@ public class firstPedro extends OpMode {
         // Runs once when the driver hits PLAY on the driver station.
 
         // Turns on all the PIDF controllers used by the follower (translation, heading, etc).
-        follower.activateAllPIDFs();
-        goingToFirstBall = new Path(new BezierLine(new Pose(0, 0), new Pose(48,0)));
+        goingToFirstBall = new Path(new BezierLine(new Pose(0, 0), new Pose(12,0)));
         follower.followPath(goingToFirstBall);
     }
 
