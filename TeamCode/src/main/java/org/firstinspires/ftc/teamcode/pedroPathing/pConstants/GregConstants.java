@@ -46,14 +46,14 @@ public class GregConstants {
             .yVelocity(56); //Changes with weight
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(7.5)
-            .strafePodX(2)
+            .forwardPodY(-4.5)
+            .strafePodX(2.5)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("odo")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
             //.customEncoderResolution(13.26291192)
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
     public static PathConstraints pathConstraints = new PathConstraints(
             0.995,

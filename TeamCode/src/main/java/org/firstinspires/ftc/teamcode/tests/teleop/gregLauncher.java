@@ -7,16 +7,22 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
+import org.firstinspires.ftc.teamcode.software.MecanumDrive;
+
 @Configurable
 @TeleOp (name = "Greg Launcher")
 public class gregLauncher extends OpMode {
     private RobotHardware robot;
+    private MecanumDrive drive;
 
     public double launchPower = 1.0;
     public double servoPower = 1.0;
     private boolean prevDpadUp = false;
     private boolean prevDpadDown = false;
+    public boolean FIELD_CENTRIC = false;
 
     private TelemetryManager telemetryM;
     public double DEADZONE = 0.1;
@@ -33,6 +39,9 @@ public class gregLauncher extends OpMode {
     private long launcherStartTime = 0;
     private boolean launcherRunning = false;   // toggle state
     private boolean prevA = false;             // track button edge
+    private boolean aPressed = false;
+    private boolean feederRunning = false;
+    private boolean prevB = false;
 
 
     @Override
@@ -40,47 +49,101 @@ public class gregLauncher extends OpMode {
         robot = new RobotHardware(hardwareMap);
         robot.setRobotConfig();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        drive = new MecanumDrive(robot);
 
 
     }
+    @Override
+    public void init_loop() {
+        // Toggle field-centric mode with gamepad1.a
+        if (gamepad1.a && !aPressed) {
+            FIELD_CENTRIC = !FIELD_CENTRIC;
+            aPressed = true; // lock until released
+        } else if (!gamepad1.a) {
+            aPressed = false; // allow future toggles
+        }
 
+        telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
+        telemetry.addLine("Press A to toggle");
+        telemetry.update();
+    }
+    @Override
+    public void start() {
+        drive.setFieldCentric(FIELD_CENTRIC);
+    }
     @Override
     public void loop() {
+        double triggerValue = gamepad1.right_trigger;
+        SPEED_MULTIPLIER = 1.0 - (0.9 * triggerValue);
 
-        mecanumMovement();
+        double adjustedLaunchPower = launchPower * SPEED_MULTIPLIER;
+        double adjustedServoPower = servoPower * SPEED_MULTIPLIER;
 
-        // Toggle logic
+        drive.update(
+                gamepad1.left_stick_x,
+                gamepad1.left_stick_y,
+                gamepad1.right_stick_x,
+                gamepad1.right_stick_y
+        );
+
+        // --- A Toggle Logic (Launcher) ---
         if (gamepad1.a && !prevA) {
-            if (!launcherRunning) {
-                // Turning ON
-                launcherRunning = true;
+            launcherRunning = !launcherRunning;
+            if (launcherRunning) {
                 launcherStartTime = System.currentTimeMillis();
             } else {
-                // Turning OFF
-                launcherRunning = false;
-                robot.launcherR.setPower(0.0);
-                robot.launcherL.setPower(0.0);
-                robot.lastS.setPower(0.0);
-                robot.LastS.setPower(0.0);
+                stopAllLaunching();
             }
         }
         prevA = gamepad1.a;
 
-        // If running, keep motors on and handle servo delay
-        if (launcherRunning) {
-            robot.launcherR.setPower(launchPower);
-            robot.launcherL.setPower(launchPower);
-
-            if (System.currentTimeMillis() - launcherStartTime >= 1000) {
-                robot.lastS.setPower(servoPower);
-                robot.LastS.setPower(servoPower);
-            } else {
-                robot.lastS.setPower(0.0);
-                robot.LastS.setPower(0.0);
+        // --- B Toggle Logic (Feeder) ---
+        if (gamepad1.b && !prevB) {
+            feederRunning = !feederRunning;
+            if (!feederRunning) {
+                stopAllLaunching();
             }
         }
+        prevB = gamepad1.b;
 
-        // Power adjust
+        boolean somethingPressed = false;
+
+        // --- Launcher Running (A toggle ON) ---
+        if (launcherRunning) {
+            somethingPressed = true;
+
+            robot.launcherR.setPower(adjustedLaunchPower);
+            robot.launcherL.setPower(adjustedLaunchPower);
+
+            if (System.currentTimeMillis() - launcherStartTime >= 1000) {
+                robot.lastS.setPower(adjustedServoPower);
+                robot.intakeS.setPower(adjustedServoPower);
+            } else {
+                robot.lastS.setPower(0.0);
+                robot.intakeS.setPower(0.0);
+            }
+        }
+        // --- Feeder Running (B toggle ON) ---
+        else if (feederRunning) {
+            somethingPressed = true;
+            robot.lastS.setPower(adjustedServoPower);
+            robot.intakeS.setPower(adjustedServoPower);
+        }
+        // --- X Override ---
+        else if (gamepad1.x) {
+            somethingPressed = true;
+            robot.launcherR.setPower(-adjustedLaunchPower / 2);
+            robot.launcherL.setPower(-adjustedLaunchPower / 2);
+            robot.lastS.setPower(-adjustedServoPower / 4);
+            robot.intakeS.setPower(-adjustedServoPower);
+        }
+
+        // --- Default: stop only if NOTHING is active ---
+        if (!somethingPressed) {
+            stopAllLaunching();
+        }
+
+        // --- Power Adjustments ---
         if (gamepad1.dpad_up && !prevDpadUp) {
             launchPower += 0.05;
         } else if (gamepad1.dpad_down && !prevDpadDown) {
@@ -90,64 +153,18 @@ public class gregLauncher extends OpMode {
         prevDpadUp = gamepad1.dpad_up;
         prevDpadDown = gamepad1.dpad_down;
 
-        // telemetry
+        // --- Telemetry ---
         telemetryM.debug("Press A to toggle launcher ON/OFF (1s delay before servos).");
+        telemetryM.debug("Press B to toggle feeder ON/OFF.");
         telemetryM.debug("Press Up for increased power.\nPress Down for decreased power");
         telemetryM.debug("Current Power: " + launchPower);
         telemetryM.update(telemetry);
     }
-    private void mecanumMovement() {
-        // Joystick values
-        strafe = gamepad1.left_stick_x;
-        rotate = gamepad1.right_stick_x;
-
-        double leftY = gamepad1.left_stick_y;
-        double rightY = gamepad1.right_stick_y;
-        forward = -(leftY + rightY);
-        forward = Range.clip(forward, -1.0, 1.0);
-
-        // Deadzone check
-        joystickActive = Math.abs(strafe) > DEADZONE ||
-                Math.abs(forward) > DEADZONE ||
-                Math.abs(rotate) > DEADZONE;
-
-        if (joystickActive) {
-                robotCentricDrive(strafe, forward, rotate);
-
-        } else {
-            leftBackPower = 0;
-            leftFrontPower = 0;
-            rightFrontPower = 0;
-            rightBackPower = 0;
-
-            applyMotorPowers();
-        }
-    }
-    private void robotCentricDrive(double strafe, double forward, double rotate) {
-        // Standard mecanum drive (no heading correction)
-        leftBackPower = (forward - strafe + rotate) * SPEED_MULTIPLIER;
-        leftFrontPower = (forward + strafe + rotate) * SPEED_MULTIPLIER;
-        rightFrontPower = (forward - strafe - rotate) * SPEED_MULTIPLIER;
-        rightBackPower = (forward + strafe - rotate) * SPEED_MULTIPLIER;
-
-        applyMotorPowers();
+    private void stopAllLaunching() {
+        robot.launcherR.setPower(0.0);
+        robot.launcherL.setPower(0.0);
+        robot.lastS.setPower(0.0);
+        robot.intakeS.setPower(0.0);
     }
 
-
-
-    private void applyMotorPowers() {
-        // Normalize if any power is > 1
-        double max = Math.max(1.0, Math.max(Math.abs(leftFrontPower), Math.max(Math.abs(rightFrontPower),
-                Math.max(Math.abs(leftBackPower), Math.abs(rightBackPower)))));
-        leftFrontPower  /= max;
-        rightFrontPower /= max;
-        leftBackPower   /= max;
-        rightBackPower  /= max;
-
-        // Send to motors
-        robot.lb.setPower(leftBackPower);
-        robot.lf.setPower(leftFrontPower);
-        robot.rf.setPower(rightFrontPower);
-        robot.rb.setPower(rightBackPower);
-    }
 }

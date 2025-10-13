@@ -14,25 +14,31 @@ public class GregConfig {
     public static void apply(RobotHardware robot, HardwareMap hw) {
         robot.rf = hw.get(DcMotor.class, "greg");
         // === Motor Direction ===
-        robot.rf.setDirection(DcMotor.Direction.REVERSE);
-        robot.rb.setDirection(DcMotor.Direction.REVERSE);
+        robot.lf.setDirection(DcMotor.Direction.REVERSE);
+        robot.lb.setDirection(DcMotor.Direction.REVERSE);
 
 
         // === Odometry ===
-        /*
         robot.odo = hw.get(GoBildaPinpointDriver.class, "odo");
         robot.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         robot.odo.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD
+                GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED
         );
-        robot.odo.setOffsets(7.5, 2, DistanceUnit.INCH);
-        */
+        robot.odo.setOffsets(-4.5, 2.5, DistanceUnit.INCH);
+        robot.odo.resetPosAndIMU();
+
+        // Launching stuff
         robot.launcherR = hw.get(DcMotor.class, "launcherR");
         robot.launcherL = hw.get(DcMotor.class, "launcherL");
         robot.launcherL.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.launcherL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.launcherR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         robot.lastS = hw.get(CRServo.class, "lastS");
-        robot.LastS = hw.get(CRServo.class, "LastS");
+        robot.intakeS = hw.get(CRServo.class, "intakeS");
+        robot.lastS.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.intakeS.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 }

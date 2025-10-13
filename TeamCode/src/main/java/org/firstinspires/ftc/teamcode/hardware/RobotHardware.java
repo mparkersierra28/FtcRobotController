@@ -30,8 +30,7 @@ public class RobotHardware {
 
     // Motors
     public DcMotor lf, rf, lb, rb, launcherR, launcherL;
-    public CRServo lastS;
-    public CRServo LastS;
+    public CRServo lastS, intakeS;
     public GoBildaPinpointDriver odo;
 
     // Current robot type

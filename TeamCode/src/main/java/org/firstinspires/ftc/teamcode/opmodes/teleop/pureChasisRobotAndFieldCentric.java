@@ -10,11 +10,13 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
+import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
 @Configurable
 @TeleOp(name = "Pure Full Chasis", group = "Teleop")
 public class pureChasisRobotAndFieldCentric extends OpMode {
     private RobotHardware robot;
+    private MecanumDrive drive;
     // Panels instance + telemetry
     private TelemetryManager panelsTelemetry;
 
@@ -25,16 +27,6 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
 
     public static double DEADZONE = 0.1;
     public static boolean FIELD_CENTRIC = false;
-
-    // Variables for telemetry
-    private boolean joystickActive = false;
-    private double strafe = 0;
-    private double forward = 0;
-    private double rotate = 0;
-    private double leftBackPower = 0;
-    private double leftFrontPower = 0;
-    private double rightFrontPower = 0;
-    private double rightBackPower = 0;
 
     // Helps create a toggle for A
     boolean aPressed = false;
@@ -47,6 +39,9 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
 
         // Initialize Panels + telemetry
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        // Get the driving class
+        drive = new MecanumDrive(robot);
 
         telemetry.addData("Status", "Initialized - Panels Connected");
     }
@@ -65,96 +60,24 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
         telemetry.update();
     }
     @Override
+    public void start() {
+        drive.setFieldCentric(FIELD_CENTRIC);
+    }
+    @Override
     public void loop() {
         // Handle driving
-        mecanumMovement();
+        drive.update(
+                gamepad1.left_stick_x,
+                gamepad1.left_stick_y,
+                gamepad1.right_stick_x,
+                gamepad1.right_stick_y
+        );
 
         // Send telemetry to Panels and DS
-        updateTelemetry();
+        panelsTelemetry = drive.updateTelemetry(panelsTelemetry);
+        panelsTelemetry.update(telemetry);
     }
-
-    private void mecanumMovement() {
-        // Joystick values
-        strafe = gamepad1.left_stick_x;
-        rotate = gamepad1.right_stick_x;
-
-        double leftY = gamepad1.left_stick_y;
-        double rightY = gamepad1.right_stick_y;
-        forward = -(leftY + rightY);
-        forward = Range.clip(forward, -1.0, 1.0);
-
-        // Deadzone check
-        joystickActive = Math.abs(strafe) > DEADZONE ||
-                Math.abs(forward) > DEADZONE ||
-                Math.abs(rotate) > DEADZONE;
-
-        if (joystickActive) {
-            if (FIELD_CENTRIC) {
-                fieldCentricDrive(strafe, forward, rotate);
-            } else {
-                robotCentricDrive(strafe, forward, rotate);
-            }
-        } else {
-            leftBackPower = 0;
-            leftFrontPower = 0;
-            rightFrontPower = 0;
-            rightBackPower = 0;
-
-            applyMotorPowers();
-        }
-    }
-    private void robotCentricDrive(double strafe, double forward, double rotate) {
-        // Standard mecanum drive (no heading correction)
-        leftBackPower = (forward - strafe + rotate) * SPEED_MULTIPLIER;
-        leftFrontPower = (forward + strafe + rotate) * SPEED_MULTIPLIER;
-        rightFrontPower = (forward - strafe - rotate) * SPEED_MULTIPLIER;
-        rightBackPower = (forward + strafe - rotate) * SPEED_MULTIPLIER;
-
-        applyMotorPowers();
-    }
-
-    private void fieldCentricDrive(double strafe, double forward, double rotate) {
-        // --- Update odometry and get heading in radians ---
-        robot.odo.update();
-        Pose2D robotPosition = robot.odo.getPosition();
-        double headingRad = robotPosition.getHeading(AngleUnit.RADIANS);
-
-        // --- Rotate joystick vector by -heading (field -> robot coords) ---
-        double cosA = Math.cos(-headingRad);
-        double sinA = Math.sin(-headingRad);
-
-        double x = strafe * cosA - forward * sinA;  // robot-centric strafe
-        double y = strafe * sinA + forward * cosA;  // robot-centric forward
-
-        // --- Standard mecanum wheel power equations ---
-        leftFrontPower  = (y + x + rotate) * SPEED_MULTIPLIER;
-        rightFrontPower = (y - x - rotate) * SPEED_MULTIPLIER;
-        leftBackPower   = (y - x + rotate) * SPEED_MULTIPLIER;
-        rightBackPower  = (y + x - rotate) * SPEED_MULTIPLIER;
-
-        // Apply to motors
-        applyMotorPowers();
-    }
-
-
-
-
-    private void applyMotorPowers() {
-        // Normalize if any power is > 1
-        double max = Math.max(1.0, Math.max(Math.abs(leftFrontPower), Math.max(Math.abs(rightFrontPower),
-                Math.max(Math.abs(leftBackPower), Math.abs(rightBackPower)))));
-        leftFrontPower  /= max;
-        rightFrontPower /= max;
-        leftBackPower   /= max;
-        rightBackPower  /= max;
-
-        // Send to motors
-        robot.lb.setPower(leftBackPower);
-        robot.lf.setPower(leftFrontPower);
-        robot.rf.setPower(rightFrontPower);
-        robot.rb.setPower(rightBackPower);
-    }
-
+/*
     private void updateTelemetry() {
         // Panels telemetry
         if (detailedPanels) {
@@ -184,4 +107,5 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
         telemetry.addData("Speed Multiplier", SPEED_MULTIPLIER);
         telemetry.update();
     }
+    */
 }

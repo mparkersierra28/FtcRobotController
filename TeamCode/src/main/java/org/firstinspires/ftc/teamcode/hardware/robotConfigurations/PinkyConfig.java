@@ -11,8 +11,8 @@ public class PinkyConfig {
     public static void apply(RobotHardware robot, HardwareMap hw) {
         robot.rf = hw.get(DcMotor.class, "pinky");
         // === Motor Direction ===
-        robot.lf.setDirection(DcMotor.Direction.REVERSE);
-        robot.lb.setDirection(DcMotor.Direction.REVERSE);
+        robot.rf.setDirection(DcMotor.Direction.REVERSE);
+        robot.rb.setDirection(DcMotor.Direction.REVERSE);
 
 
         // === Odometry ===
