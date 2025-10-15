@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -35,10 +34,12 @@ public class GregConfig {
         robot.launcherL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.launcherR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
-        robot.lastS = hw.get(CRServo.class, "lastS");
         robot.intakeS = hw.get(CRServo.class, "intakeS");
-        robot.lastS.setDirection(DcMotorSimple.Direction.REVERSE);
-        robot.intakeS.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.firstUpS = hw.get(CRServo.class, "firstUpS");
+        robot.secondUpS = hw.get(CRServo.class, "secondUpS");
+        robot.thirdUpS = hw.get(CRServo.class, "thirdUpS");
+
+        robot.firstUpS.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.secondUpS.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 }

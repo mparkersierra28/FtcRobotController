@@ -5,10 +5,6 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
@@ -27,15 +23,6 @@ public class gregLauncher extends OpMode {
     private TelemetryManager telemetryM;
     public double DEADZONE = 0.1;
     public double SPEED_MULTIPLIER = 1.0;
-
-    private boolean joystickActive = false;
-    private double strafe = 0;
-    private double forward = 0;
-    private double rotate = 0;
-    private double leftBackPower = 0;
-    private double leftFrontPower = 0;
-    private double rightFrontPower = 0;
-    private double rightBackPower = 0;
     private long launcherStartTime = 0;
     private boolean launcherRunning = false;   // toggle state
     private boolean prevA = false;             // track button edge
@@ -116,17 +103,21 @@ public class gregLauncher extends OpMode {
             robot.launcherL.setPower(adjustedLaunchPower);
 
             if (System.currentTimeMillis() - launcherStartTime >= 1000) {
-                robot.lastS.setPower(adjustedServoPower);
+                robot.thirdUpS.setPower(adjustedServoPower);
+                robot.secondUpS.setPower(adjustedServoPower);
+                robot.firstUpS.setPower(adjustedServoPower);
                 robot.intakeS.setPower(adjustedServoPower);
             } else {
-                robot.lastS.setPower(0.0);
+                robot.firstUpS.setPower(0.0);
                 robot.intakeS.setPower(0.0);
             }
         }
         // --- Feeder Running (B toggle ON) ---
         else if (feederRunning) {
             somethingPressed = true;
-            robot.lastS.setPower(adjustedServoPower);
+            robot.thirdUpS.setPower(adjustedServoPower);
+            robot.secondUpS.setPower(adjustedServoPower);
+            robot.firstUpS.setPower(adjustedServoPower);
             robot.intakeS.setPower(adjustedServoPower);
         }
         // --- X Override ---
@@ -134,8 +125,10 @@ public class gregLauncher extends OpMode {
             somethingPressed = true;
             robot.launcherR.setPower(-adjustedLaunchPower / 2);
             robot.launcherL.setPower(-adjustedLaunchPower / 2);
-            robot.lastS.setPower(-adjustedServoPower / 4);
-            robot.intakeS.setPower(-adjustedServoPower);
+            robot.thirdUpS.setPower(-adjustedServoPower / 4);
+            robot.secondUpS.setPower(-adjustedServoPower / 4);
+            robot.firstUpS.setPower(-adjustedServoPower / 4);
+            robot.intakeS.setPower(-adjustedServoPower / 8);
         }
 
         // --- Default: stop only if NOTHING is active ---
@@ -143,27 +136,18 @@ public class gregLauncher extends OpMode {
             stopAllLaunching();
         }
 
-        // --- Power Adjustments ---
-        if (gamepad1.dpad_up && !prevDpadUp) {
-            launchPower += 0.05;
-        } else if (gamepad1.dpad_down && !prevDpadDown) {
-            launchPower -= 0.05;
-        }
-
-        prevDpadUp = gamepad1.dpad_up;
-        prevDpadDown = gamepad1.dpad_down;
-
         // --- Telemetry ---
         telemetryM.debug("Press A to toggle launcher ON/OFF (1s delay before servos).");
         telemetryM.debug("Press B to toggle feeder ON/OFF.");
-        telemetryM.debug("Press Up for increased power.\nPress Down for decreased power");
-        telemetryM.debug("Current Power: " + launchPower);
+        telemetryM.debug("Press X to reverse motors for human player.");
         telemetryM.update(telemetry);
     }
     private void stopAllLaunching() {
         robot.launcherR.setPower(0.0);
         robot.launcherL.setPower(0.0);
-        robot.lastS.setPower(0.0);
+        robot.thirdUpS.setPower(0.0);
+        robot.secondUpS.setPower(0.0);
+        robot.firstUpS.setPower(0.0);
         robot.intakeS.setPower(0.0);
     }
 
