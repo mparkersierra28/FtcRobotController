@@ -30,7 +30,7 @@ public class GregConfig {
         // Launching stuff
         robot.launcherR = hw.get(DcMotor.class, "launcherR");
         robot.launcherL = hw.get(DcMotor.class, "launcherL");
-        robot.launcherL.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.launcherR.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.launcherL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.launcherR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
