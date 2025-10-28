@@ -3,33 +3,29 @@ package org.firstinspires.ftc.teamcode.tests.teleop;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
 @Configurable
-@TeleOp (name = "Greg Launcher")
+@TeleOp(name = "Greg Launcher", group = "Greg")
 public class gregLauncher extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
-
-    public double launchPower = 1.0;
-    public double servoPower = 1.0;
-    private boolean prevDpadUp = false;
-    private boolean prevDpadDown = false;
+    public static double launchPower = 1.0;
+    public static double servoPower = 1.0;
     public boolean FIELD_CENTRIC = false;
 
     private TelemetryManager telemetryM;
-    public double DEADZONE = 0.1;
     public double SPEED_MULTIPLIER = 1.0;
     private long launcherStartTime = 0;
-    private boolean launcherRunning = false;   // toggle state
-    private boolean prevA = false;             // track button edge
-    private boolean aPressed = false;
+    private boolean launcherRunning = false;
+    private boolean prevA = false;
     private boolean feederRunning = false;
     private boolean prevB = false;
-
 
     @Override
     public void init() {
@@ -37,27 +33,25 @@ public class gregLauncher extends OpMode {
         robot.setRobotConfig();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         drive = new MecanumDrive(robot);
-
-
     }
+
     @Override
     public void init_loop() {
-        // Toggle field-centric mode with gamepad1.a
-        if (gamepad1.a && !aPressed) {
+        if (gamepad1.a && !prevA) {
             FIELD_CENTRIC = !FIELD_CENTRIC;
-            aPressed = true; // lock until released
-        } else if (!gamepad1.a) {
-            aPressed = false; // allow future toggles
         }
+        prevA = gamepad1.a;
 
         telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
         telemetry.update();
     }
+
     @Override
     public void start() {
         drive.setFieldCentric(FIELD_CENTRIC);
     }
+
     @Override
     public void loop() {
         double triggerValue = gamepad1.right_trigger;
@@ -73,8 +67,14 @@ public class gregLauncher extends OpMode {
                 gamepad1.right_stick_y
         );
 
-        // --- A Toggle Logic (Launcher) ---
+        // --- A Toggle (Launcher) ---
         if (gamepad1.a && !prevA) {
+            // if feeder was on, turn it off first
+            if (feederRunning) {
+                feederRunning = false;
+                stopAllLaunching();
+            }
+
             launcherRunning = !launcherRunning;
             if (launcherRunning) {
                 launcherStartTime = System.currentTimeMillis();
@@ -84,8 +84,14 @@ public class gregLauncher extends OpMode {
         }
         prevA = gamepad1.a;
 
-        // --- B Toggle Logic (Feeder) ---
+        // --- B Toggle (Feeder) ---
         if (gamepad1.b && !prevB) {
+            // if launcher was on, turn it off first
+            if (launcherRunning) {
+                launcherRunning = false;
+                stopAllLaunching();
+            }
+
             feederRunning = !feederRunning;
             if (!feederRunning) {
                 stopAllLaunching();
@@ -95,7 +101,7 @@ public class gregLauncher extends OpMode {
 
         boolean somethingPressed = false;
 
-        // --- Launcher Running (A toggle ON) ---
+        // --- Launcher Running ---
         if (launcherRunning) {
             somethingPressed = true;
 
@@ -112,7 +118,8 @@ public class gregLauncher extends OpMode {
                 robot.intakeS.setPower(0.0);
             }
         }
-        // --- Feeder Running (B toggle ON) ---
+
+        // --- Feeder Running ---
         else if (feederRunning) {
             somethingPressed = true;
             robot.thirdUpS.setPower(adjustedServoPower);
@@ -120,8 +127,16 @@ public class gregLauncher extends OpMode {
             robot.firstUpS.setPower(adjustedServoPower);
             robot.intakeS.setPower(adjustedServoPower);
         }
+
         // --- X Override ---
         else if (gamepad1.x) {
+            // stop any active running modes first
+            if (launcherRunning || feederRunning) {
+                launcherRunning = false;
+                feederRunning = false;
+                stopAllLaunching();
+            }
+
             somethingPressed = true;
             robot.launcherR.setPower(-adjustedLaunchPower / 2);
             robot.launcherL.setPower(-adjustedLaunchPower / 2);
@@ -131,7 +146,7 @@ public class gregLauncher extends OpMode {
             robot.intakeS.setPower(-adjustedServoPower / 8);
         }
 
-        // --- Default: stop only if NOTHING is active ---
+        // --- Default stop ---
         if (!somethingPressed) {
             stopAllLaunching();
         }
@@ -142,6 +157,7 @@ public class gregLauncher extends OpMode {
         telemetryM.debug("Press X to reverse motors for human player.");
         telemetryM.update(telemetry);
     }
+
     private void stopAllLaunching() {
         robot.launcherR.setPower(0.0);
         robot.launcherL.setPower(0.0);
@@ -150,5 +166,4 @@ public class gregLauncher extends OpMode {
         robot.firstUpS.setPower(0.0);
         robot.intakeS.setPower(0.0);
     }
-
 }

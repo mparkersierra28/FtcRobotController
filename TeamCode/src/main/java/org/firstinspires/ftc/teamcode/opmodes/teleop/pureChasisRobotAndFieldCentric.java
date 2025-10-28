@@ -5,10 +5,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
@@ -77,35 +74,4 @@ public class pureChasisRobotAndFieldCentric extends OpMode {
         panelsTelemetry = drive.updateTelemetry(panelsTelemetry);
         panelsTelemetry.update(telemetry);
     }
-/*
-    private void updateTelemetry() {
-        // Panels telemetry
-        if (detailedPanels) {
-            panelsTelemetry.debug("Joystick Active", joystickActive);
-            panelsTelemetry.debug("Strafe", strafe);
-            panelsTelemetry.debug("Forward", forward);
-            panelsTelemetry.debug("Rotate", rotate);
-            panelsTelemetry.debug("Speed Multiplier", SPEED_MULTIPLIER);
-            panelsTelemetry.debug("Deadzone", DEADZONE);
-        }
-
-        panelsTelemetry.debug("LB Power", leftBackPower);
-        panelsTelemetry.debug("LF Power", leftFrontPower);
-        panelsTelemetry.debug("RF Power", rightFrontPower);
-        panelsTelemetry.debug("RB Power", rightBackPower);
-
-        panelsTelemetry.update(telemetry);
-
-        // Driver Station telemetry
-        telemetry.addData("LB Power", leftBackPower);
-        telemetry.addData("LF Power", leftFrontPower);
-        telemetry.addData("RF Power", rightFrontPower);
-        telemetry.addData("RB Power", rightBackPower);
-
-        telemetry.addData("Status", "Running");
-        telemetry.addData("Joystick Active", joystickActive);
-        telemetry.addData("Speed Multiplier", SPEED_MULTIPLIER);
-        telemetry.update();
-    }
-    */
 }

@@ -14,9 +14,9 @@ public class MecanumDrive {
     private final RobotHardware robot;
 
     // Configurable fields
-    public final double DEADZONE = 0.05;
+    public final static double DEADZONE = 0.05;
     public double speed = 1.0;
-    public boolean detailedPanels;
+    public static boolean detailedPanels;
 
     // State variables
     private boolean FIELD_CENTRIC = false;
