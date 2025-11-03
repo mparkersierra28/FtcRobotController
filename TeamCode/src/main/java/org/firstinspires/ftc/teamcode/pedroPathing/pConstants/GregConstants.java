@@ -19,15 +19,18 @@ public class GregConstants {
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             //changes with weight
-            .mass(6)
-            .forwardZeroPowerAcceleration(-35)
-            .lateralZeroPowerAcceleration(-62)
+            .mass(9)
+            .forwardZeroPowerAcceleration(-33)
+            .lateralZeroPowerAcceleration(-57)
 
             .useSecondaryTranslationalPIDF(false)
             .useSecondaryHeadingPIDF(false)
             .useSecondaryDrivePIDF(false)
             .centripetalScaling(0.0005)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))
+            //I = friction
+            //P = how agressive it returns
+            //D = reduces osolations
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.08, 0, 0.01, 0.02))
             .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.1, 0))
             .drivePIDFCoefficients(
                     new FilteredPIDFCoefficients(0.09, 0, 0.00001, 0.6, 0)
@@ -38,16 +41,16 @@ public class GregConstants {
             .leftRearMotorName("LB")
             .rightFrontMotorName("greg")
             .rightRearMotorName("RB")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .xVelocity(61.5) //changes with weight
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .xVelocity(66) //changes with weight
             .yVelocity(56); //Changes with weight
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .forwardPodY(-4.5)
-            .strafePodX(2.5)
+            .forwardPodY(-4.75)
+            .strafePodX(-2)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("odo")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)

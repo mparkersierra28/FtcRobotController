@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.pedropathing.follower.Follower;
@@ -29,7 +30,8 @@ public class RobotHardware {
     private HardwareMap hw;
 
     // Motors
-    public DcMotor lf, rf, lb, rb, launcherR, launcherL;
+    public DcMotor lf, rf, lb, rb;
+    public DcMotorEx launcherR, launcherL;
     public CRServo intakeS, firstUpS, secondUpS, thirdUpS;
     public GoBildaPinpointDriver odo;
 

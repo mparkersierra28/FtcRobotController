@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware.robotConfigurations;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -24,12 +25,12 @@ public class GregConfig {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED
         );
-        robot.odo.setOffsets(-4.5, 2.5, DistanceUnit.INCH);
+        robot.odo.setOffsets(-4.75, -2.0, DistanceUnit.INCH);
         robot.odo.resetPosAndIMU();
 
         // Launching stuff
-        robot.launcherR = hw.get(DcMotor.class, "launcherR");
-        robot.launcherL = hw.get(DcMotor.class, "launcherL");
+        robot.launcherR = hw.get(DcMotorEx.class, "launcherR");
+        robot.launcherL = hw.get(DcMotorEx.class, "launcherL");
         robot.launcherR.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.launcherL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.launcherR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

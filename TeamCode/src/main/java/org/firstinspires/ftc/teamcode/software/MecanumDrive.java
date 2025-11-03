@@ -4,7 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -86,6 +85,40 @@ public class MecanumDrive {
 
         applyMotorPowers();
     }
+
+    // Rotates the robot to a target heading (degrees)
+    public void turnToAngle(double targetAngleDeg) {
+        // Normalize target
+        targetAngleDeg = (targetAngleDeg % 360 + 360) % 360;
+
+        robot.odo.update();
+        // Pinpoint heading is clockwise positive — flip it
+        double currentHeading = -robot.odo.getPosition().getHeading(AngleUnit.DEGREES);
+        currentHeading = (currentHeading % 360 + 360) % 360;
+
+        // Compute shortest signed error (-180, 180]
+        double error = ((targetAngleDeg - currentHeading + 540) % 360) - 180;
+
+        double kP = 0.01;
+        double turnPower = kP * error;
+        turnPower = Range.clip(turnPower, -0.2, 0.2);
+
+        if (Math.abs(error) <= 2) {
+            stopMotors();
+            return;
+        }
+
+        double minPower = 0.15;
+        if (Math.abs(turnPower) < minPower)
+            turnPower = Math.copySign(minPower, turnPower);
+
+        robotCentricDrive(0, 0, turnPower);
+    }
+
+
+
+
+
 
     // --- Motor Power Handling ---
     private void applyMotorPowers() {
