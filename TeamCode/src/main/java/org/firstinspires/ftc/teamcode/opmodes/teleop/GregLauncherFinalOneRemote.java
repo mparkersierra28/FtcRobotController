@@ -8,23 +8,26 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
+import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 @Configurable
 @TeleOp(name="Definite Greg", group = "1")
 public class GregLauncherFinalOneRemote extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
+    private CameraQR camera;
 
     public TelemetryManager telemetryM;
     // Launching Degree Position
     private boolean alliance = true; // true = red
-    //public static double redRotation = 310;
-    public static double redRotation = 28;
+    public static double redRotationClose = -40;
+    public static double redRotationFar = -60;
 
-    //public static double blueRotation = 50;
-    public static double blueRotation = -28;
+    public static double blueRotationClose = 40;
+    public static double blueRotationFar = 60;
 
-    private double clipAngle;
+    private double clipAngleClose;
+    private double clipAngleFar;
 
     // Launcher Velocities
     public static int launchSmallVel = 750;
@@ -77,53 +80,58 @@ public class GregLauncherFinalOneRemote extends OpMode {
         // Get the driving class
         drive = new MecanumDrive(robot);
 
+        camera = new CameraQR(robot);
+
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         telemetry.addData("Status", "Initialized - Panels Connected");
     }
     @Override
     public void init_loop() {
-        // Toggle field-centric mode with gamepad1.a
+        // Toggle field-centric mode
         if (gamepad1.a && !aMenuPressed1) {
             FIELD_CENTRIC = !FIELD_CENTRIC;
-            aMenuPressed1 = true; // lock until released
+            aMenuPressed1 = true;
         } else if (!gamepad1.a) {
-            aMenuPressed1 = false; // allow future toggles
+            aMenuPressed1 = false;
         }
 
-        // Toggle alliance with gamepad1.b
+        // Toggle alliance (red/blue)
         if (gamepad1.b && !bMenuPressed1) {
-            alliance = !alliance;
-            bMenuPressed1 = true; // lock until released
+            robot.alliance = (robot.alliance == RobotHardware.Alliance.RED)
+                    ? RobotHardware.Alliance.BLUE
+                    : RobotHardware.Alliance.RED;
+            bMenuPressed1 = true;
         } else if (!gamepad1.b) {
-            bMenuPressed1 = false; // allow future toggles
+            bMenuPressed1 = false;
         }
 
-        // Toggle two player mode with gamepad2.a
+        // Toggle two player mode
         if (gamepad2.a && !aMenuPressed2) {
             twoPlayers = !twoPlayers;
-            aMenuPressed2 = true; // lock until released
+            aMenuPressed2 = true;
         } else if (!gamepad2.a) {
-            aMenuPressed2 = false; // allow future toggles
+            aMenuPressed2 = false;
         }
 
         telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
 
-        telemetry.addData("Menu: Alliance", alliance ? "RED" : "BLUE");
+        telemetry.addData("Menu: Alliance", robot.alliance == RobotHardware.Alliance.RED ? "RED" : "BLUE");
         telemetry.addLine("Press B to toggle");
 
         telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
         telemetry.addLine("Gamepad2: Press A to toggle");
-
         telemetry.update();
     }
+
     @Override
     public void start() {
         drive.setFieldCentric(FIELD_CENTRIC);
 
-        if (alliance) clipAngle = redRotation;
-        else clipAngle = blueRotation;
+        // Set clip angle based on alliance
+        clipAngleClose = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationClose : blueRotationClose;
+        clipAngleFar = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationFar : blueRotationFar;
 
         telemetry.addData("Field Centric is", FIELD_CENTRIC ? "ON" : "OFF");
         telemetry.addData("Alliance is", alliance ? "RED" : "BLUE");
@@ -148,7 +156,8 @@ public class GregLauncherFinalOneRemote extends OpMode {
         // Handle driving
         // --- Rotate to clip angle ---
         if (gamepad1.y) {
-            drive.turnToAngle(clipAngle);
+            //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);
+            drive.turnInDirection(camera.getQRDir());
             telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
         } else {
             drive.update(
@@ -167,6 +176,11 @@ public class GregLauncherFinalOneRemote extends OpMode {
             currentLauncherVelocity = 0.0;
             lastTargetVelocity = 0.0;
             return;
+        }
+
+        // --- Reset Odo Dir ---
+        if (gamepad1.dpad_up) {
+            robot.odo.resetPosAndIMU();
         }
 
         // --- A Toggle (Launcher) ---
@@ -227,26 +241,17 @@ public class GregLauncherFinalOneRemote extends OpMode {
         }
         prevX1 = gamepad1.x;
 
-
+        double targetVelocity = gamepad1.dpad_down ? launchBigVel : launchSmallVel;
         // --- Launcher Running ---
         if (launcherRunning1) {
             somethingRunning = true;
-
-            double targetVelocity = gamepad1.dpad_down ? launchBigVel : launchSmallVel;
-
-            // Gradual ramping
-            if (currentLauncherVelocity < targetVelocity) {
-                currentLauncherVelocity = Math.min(currentLauncherVelocity + rampRate, targetVelocity);
-            } else if (currentLauncherVelocity > targetVelocity) {
-                currentLauncherVelocity = Math.max(currentLauncherVelocity - rampRate, targetVelocity);
+            if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=40&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=40){
+                gamepad1.rumble(500);
             }
 
-            // Update when necessary
-            if (targetVelocity != lastTargetVelocity || Math.abs(currentLauncherVelocity - targetVelocity) > 5) {
-                robot.launcherR.setVelocity(currentLauncherVelocity);
-                robot.launcherL.setVelocity(currentLauncherVelocity);
-                lastTargetVelocity = targetVelocity;
-            }
+
+            robot.launcherR.setVelocity(targetVelocity);
+            robot.launcherL.setVelocity(targetVelocity);
         }
 
         // --- Feeder Running ---
@@ -268,6 +273,8 @@ public class GregLauncherFinalOneRemote extends OpMode {
             robot.firstUpS.setPower(-adjustedServoPower / 4);
             robot.intakeS.setPower(-adjustedServoPower / 8);
         }
+        telemetryM.addData("Velocity", robot.launcherR.getVelocity());
+        telemetryM.addData("Error", robot.launcherR.getVelocity()-targetVelocity);
     }
 
 

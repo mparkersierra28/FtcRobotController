@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous;
-
-import static android.os.SystemClock.sleep;
+package org.firstinspires.ftc.teamcode.tests.autonomous;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -15,21 +13,20 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Far Side Preload Blue", group = "1")
-public class farSideBlue extends OpMode {
+@Autonomous(name = "Far Side Preload", group = "Old")
+public class farSidePreLoad extends OpMode {
 
     private RobotHardware robot;
     public static double movVel = 15;
     public static double closeVelocity = 700;
     public static double servoPower = 1;
     public static double spinUpTime = 2000;
-
     public static long WAIT_BEFORE_LAUNCH_MS = 3000;
 
     public static double startX = 0, startY = 0, startHeading = 0;
-    public static double path1X = -29, path1Y = -31, path1Heading = 50;
+    public static double path1X = -29, path1Y = 31, path1Heading = -50;
     public static double path2X = 60, path2Y = -20, path2Heading = 90;
-    public static double finalX = -56, finalY = -31, finalHeading = 0;
+    public static double finalX = -56, finalY = 31, finalHeading = 0;
 
     private Path launchFirst3;
     private Path goPark;

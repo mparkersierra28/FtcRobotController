@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous (name = "First Pedro")
+@Autonomous (name = "First Pedro", group = "Example")
 public class firstPedro extends OpMode {
 
     // The distance (in inches, cm, or your chosen unit depending on your config)

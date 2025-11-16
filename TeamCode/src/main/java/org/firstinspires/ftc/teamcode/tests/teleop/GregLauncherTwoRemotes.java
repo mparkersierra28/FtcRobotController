@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
-@TeleOp (name="Greg Two Remote")
+@TeleOp (name="Greg Two Remote", group="Greg")
 public class GregLauncherTwoRemotes extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;

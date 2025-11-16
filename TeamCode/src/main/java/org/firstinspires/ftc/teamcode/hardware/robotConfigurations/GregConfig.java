@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.hardware.robotConfigurations;
 
+import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -35,6 +37,11 @@ public class GregConfig {
         robot.launcherL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.launcherR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        robot.launcherL.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER,
+                new PIDFCoefficients(10, 0.7, 0, 0));
+        robot.launcherR.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER,
+                new PIDFCoefficients(10, 0.7, 0, 0));
+
         robot.intakeS = hw.get(CRServo.class, "intakeS");
         robot.firstUpS = hw.get(CRServo.class, "firstUpS");
         robot.secondUpS = hw.get(CRServo.class, "secondUpS");
@@ -42,5 +49,8 @@ public class GregConfig {
 
         robot.firstUpS.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.secondUpS.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // Sensors
+        robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
     }
 }

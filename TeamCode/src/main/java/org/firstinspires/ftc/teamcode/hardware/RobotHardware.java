@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -26,6 +27,16 @@ public class RobotHardware {
         GREG,
         HUBERT
     }
+    // Current robot type
+    private RobotType robotType;
+
+    // Alliance enum
+    public enum Alliance {
+        RED,
+        BLUE
+    }
+    // Current Alliance
+    public Alliance alliance = Alliance.RED;
 
     private HardwareMap hw;
 
@@ -35,8 +46,9 @@ public class RobotHardware {
     public CRServo intakeS, firstUpS, secondUpS, thirdUpS;
     public GoBildaPinpointDriver odo;
 
-    // Current robot type
-    private RobotType robotType;
+    // Sensors
+    public HuskyLens huskyLens;
+
 
     public RobotHardware(HardwareMap hw) {
         this.hw = hw;

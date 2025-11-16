@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous;
-
-import static android.os.SystemClock.sleep;
+package org.firstinspires.ftc.teamcode.tests.autonomous;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -15,7 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Close Side Park Red", group = "1")
+@Autonomous(name = "Close Side Park Red", group = "Old")
 public class closeSidePark extends OpMode {
     private RobotHardware robot;
 

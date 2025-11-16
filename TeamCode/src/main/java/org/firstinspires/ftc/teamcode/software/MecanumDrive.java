@@ -5,6 +5,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
@@ -26,6 +27,7 @@ public class MecanumDrive {
     // Constructors
     public MecanumDrive(RobotHardware robot) {
         this.robot = robot;
+        //this.robot.odo.setPosition(new Pose2D(DistanceUnit.INCH, 0,0, AngleUnit.DEGREES, ((this.robot.alliance  == RobotHardware.Alliance.RED) ? 90 : -90)));
     }
 
     // Allows teleop to adjust drive mode or speed multiplier
@@ -34,6 +36,9 @@ public class MecanumDrive {
     }
 
     // Main update method (called each loop)
+    /**
+     * Uses stick inputs for drive train, uses centric defined in init
+     * */
     public void update(double leftStickX, double leftStickY, double rightStickX, double rightStickY) {
         strafe = leftStickX;
         rotate = rightStickX;
@@ -112,7 +117,10 @@ public class MecanumDrive {
         if (Math.abs(turnPower) < minPower)
             turnPower = Math.copySign(minPower, turnPower);
 
-        robotCentricDrive(0, 0, turnPower);
+        robotCentricDrive(0, 0, -turnPower);
+    }
+    public void turnInDirection(double direction) {
+        robotCentricDrive(0, 0, direction*0.1);
     }
 
 

@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
-@TeleOp(name="Simple DPad Drive", group="TeleOp")
+@TeleOp(name="Simple DPad Drive", group="Example")
 public class DPadDrive extends OpMode {
     RobotHardware robot;
 

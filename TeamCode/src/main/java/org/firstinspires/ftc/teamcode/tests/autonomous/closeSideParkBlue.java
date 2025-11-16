@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous;
-
-import static android.os.SystemClock.sleep;
+package org.firstinspires.ftc.teamcode.tests.autonomous;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -15,8 +13,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Close Side Intake", group = "1")
-public class closeSideIntake extends OpMode {
+@Autonomous(name = "Close Side Park Blue", group = "Old")
+public class closeSideParkBlue extends OpMode {
     private RobotHardware robot;
     private static double farVelocity = 900;
     public static double intakeVel = 20;
@@ -25,7 +23,7 @@ public class closeSideIntake extends OpMode {
     public static double startX = 0, startY = 0, startHeading = 0;
     public static double path1X = 22, path1Y = 8, path1Heading = 90;
     public static double path2X = 22, path2Y = -30, path2Heading = 90;
-    public static double finalX = 22, finalY = 0, finalHeading = 0;
+    public static double finalX = 24, finalY = 0, finalHeading = 0;
 
     private Path getIntoIntakePos;
     private Path intakeBalls;
@@ -64,52 +62,19 @@ public class closeSideIntake extends OpMode {
         intakeBalls.setLinearHeadingInterpolation(Math.toRadians(path1Heading), Math.toRadians(path2Heading));
         intakeBalls.setVelocityConstraint(intakeVel);
 
-        goPark = new Path(new BezierLine(intakingPos, parkingPos));
-        goPark.setLinearHeadingInterpolation(Math.toRadians(path2Heading), Math.toRadians(finalHeading));
+        goPark = new Path(new BezierLine(new Pose(startX, startY), parkingPos));
+        goPark.setLinearHeadingInterpolation(Math.toRadians(startHeading), Math.toRadians(finalHeading));
 
 
         currentState = State.POSITIONING_PATH; // start path following
-        follower.followPath(getIntoIntakePos);
+        follower.followPath(goPark);
     }
 
     @Override
     public void loop() {
-
-        switch (currentState) {
-
-            case POSITIONING_PATH:
-                if (follower.isBusy()) {
-                    follower.update();
-                } else {
-                    currentState = State.INTAKE_PATH;
-                    runServos();
-                    follower.followPath(intakeBalls);
-                }
-                break;
-
-            case INTAKE_PATH:
-                telemetryM.debug("Servos");
-                if (follower.isBusy()) {
-                    follower.update();
-                } else {
-                    currentState = State.PARK;
-                    sleep(1000);
-                    stopLaunching();
-                    follower.followPath(goPark);
-                }
-                break;
-            case PARK:
-                if (follower.isBusy()) {
-                    follower.update();
-                } else {
-                    currentState = State.DONE;
-                    follower.followPath(intakeBalls);
-                }
-                break;
-            case DONE:
-                // Finished autonomous, do nothing
-                requestOpModeStop();
-                break;
+        follower.update();
+        if (!follower.isBusy()) {
+            requestOpModeStop();
         }
         telemetryM.update(telemetry);
     }

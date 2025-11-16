@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.teleop;
+package org.firstinspires.ftc.teamcode.tuning;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;

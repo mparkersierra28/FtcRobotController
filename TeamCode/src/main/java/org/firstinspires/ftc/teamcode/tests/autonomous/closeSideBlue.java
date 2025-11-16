@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous;
 
 import static android.os.SystemClock.sleep;
 
@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Close Side Intake Blue", group = "1")
+@Autonomous(name = "Close Side Intake Blue", group = "Old")
 public class closeSideBlue extends OpMode {
     private RobotHardware robot;
     private static double farVelocity = 900;
