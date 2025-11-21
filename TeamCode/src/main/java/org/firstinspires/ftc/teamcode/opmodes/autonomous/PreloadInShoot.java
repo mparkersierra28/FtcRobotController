@@ -26,6 +26,8 @@ public class PreloadInShoot extends OpMode {
     public static double movVel = 15, intakeVel = 15, closeVelocity = 700, servoPower = 1;
     public static double spinUpTime = 2000, WAIT_BEFORE_LAUNCH_MS = 2000;
     public static int launchingDuration = 4000;
+    public static double lErrorMargin = 60;
+    public static double gateSPower = 0.2;
 
     // RED baseline coords
     public static double startX = 0, startY = 0, startHeading = 0;
@@ -103,11 +105,16 @@ public class PreloadInShoot extends OpMode {
 
             case SPINUP:
                 runLaunchers();
+                runServosAt(-0.5);
+                robot.thirdUpS.setPower(-0.01);
                 if (timeElapsed(spinUpTime)) nextState(State.FIRE);
                 break;
 
             case FIRE:
-                runServos();
+                if (Math.abs(closeVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(closeVelocity-robot.launcherL.getVelocity())<=lErrorMargin) {
+                    robot.thirdUpS.setPower(gateSPower);
+                    runServos();
+                } else robot.thirdUpS.setPower(0);
                 if (timeElapsed(launchingDuration)) {
                     amountOfLaunch++;
                     stopLaunching();
@@ -192,7 +199,7 @@ public class PreloadInShoot extends OpMode {
     }
 
     private void runServos() {
-        robot.thirdUpS.setPower(servoPower);
+        //robot.thirdUpS.setPower(servoPower);
         robot.secondUpS.setPower(servoPower);
         robot.firstUpS.setPower(servoPower);
         robot.intakeS.setPower(servoPower);
@@ -201,6 +208,7 @@ public class PreloadInShoot extends OpMode {
     private void stopLaunching() {
         runLaunchersAt(0);
         runServosAt(0);
+        robot.thirdUpS.setPower(0);
     }
 
     private void runLaunchersAt(double velocity) {
@@ -209,9 +217,9 @@ public class PreloadInShoot extends OpMode {
     }
 
     private void runServosAt(double power) {
-        robot.thirdUpS.setPower(power);
+        //robot.thirdUpS.setPower(power);
         robot.secondUpS.setPower(power);
         robot.firstUpS.setPower(power);
-        robot.intakeS.setPower(power);
+        robot.intakeS.setPower(power/10);
     }
 }

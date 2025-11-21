@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -42,11 +43,18 @@ public class RobotHardware {
 
     // Motors
     public DcMotor lf, rf, lb, rb;
+
+    // Greg
     public DcMotorEx launcherR, launcherL;
     public CRServo intakeS, firstUpS, secondUpS, thirdUpS;
-    public GoBildaPinpointDriver odo;
+
+    // GIAN
+    public DcMotor magazine;
+    public DcMotorEx launcher;
+    public RevColorSensorV3 intakeSensor, exitSensor;
 
     // Sensors
+    public GoBildaPinpointDriver odo;
     public HuskyLens huskyLens;
 
 

@@ -75,8 +75,13 @@ public class MecanumDrive {
     private void fieldCentricDrive(double strafe, double forward, double rotate) {
         robot.odo.update();
         Pose2D robotPosition = robot.odo.getPosition();
+
         double headingRad = robotPosition.getHeading(AngleUnit.RADIANS);
 
+        // Rotate field-frame so up = -90 degrees from normal
+        headingRad -= Math.PI / 2.0;
+
+        // Standard field-centric rotation
         double cosA = Math.cos(-headingRad);
         double sinA = Math.sin(-headingRad);
 
@@ -90,6 +95,7 @@ public class MecanumDrive {
 
         applyMotorPowers();
     }
+
 
     // Rotates the robot to a target heading (degrees)
     public void turnToAngle(double targetAngleDeg) {
@@ -120,7 +126,7 @@ public class MecanumDrive {
         robotCentricDrive(0, 0, -turnPower);
     }
     public void turnInDirection(double direction) {
-        robotCentricDrive(0, 0, direction*0.1);
+        robotCentricDrive(0, 0, (direction > 0 ? 1 : -1)*-0.1);
     }
 
 

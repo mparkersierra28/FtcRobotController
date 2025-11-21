@@ -81,7 +81,7 @@ public class testLauncherVelocity extends OpMode {
 
         // --- Apply third motor toggle state ---
         if (thirdUpEnabled) {
-            robot.thirdUpS.setPower(1);
+            robot.thirdUpS.setPower(0.2);
         } else {
             robot.thirdUpS.setPower(0);
         }
