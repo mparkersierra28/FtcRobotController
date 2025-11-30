@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous.pastComp;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;

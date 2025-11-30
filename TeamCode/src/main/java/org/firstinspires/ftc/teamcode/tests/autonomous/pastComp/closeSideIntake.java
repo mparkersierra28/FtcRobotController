@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous.pastComp;
 
 import static android.os.SystemClock.sleep;
 
@@ -15,17 +15,17 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Close Side Intake Blue", group = "Old")
-public class closeSideBlue extends OpMode {
+@Autonomous(name = "Close Side Intake", group = "Old")
+public class closeSideIntake extends OpMode {
     private RobotHardware robot;
     private static double farVelocity = 900;
     public static double intakeVel = 20;
     private double servoPower = 1;
 
     public static double startX = 0, startY = 0, startHeading = 0;
-    public static double path1X = 22, path1Y = -8, path1Heading = -90;
-    public static double path2X = 22, path2Y = 30, path2Heading = -90;
-    public static double finalX = 24, finalY = 0, finalHeading = 0;
+    public static double path1X = 22, path1Y = 8, path1Heading = 90;
+    public static double path2X = 22, path2Y = -30, path2Heading = 90;
+    public static double finalX = 22, finalY = 0, finalHeading = 0;
 
     private Path getIntoIntakePos;
     private Path intakeBalls;

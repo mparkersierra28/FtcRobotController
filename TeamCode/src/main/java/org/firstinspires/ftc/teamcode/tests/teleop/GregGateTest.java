@@ -23,34 +23,18 @@ public class GregGateTest extends OpMode {
     private Physics physics;
 
     public TelemetryManager telemetryM;
+
     // Launching Degree Position
-    private boolean alliance = true; // true = red
-    public static double redRotationClose = -40;
-    public static double redRotationFar = -60;
-
-    public static double blueRotationClose = 40;
-    public static double blueRotationFar = 60;
-
-    private double clipAngleClose;
-    private double clipAngleFar;
-
-    // Launcher Velocities
-    public static int launchSmallVel = 750;
-    public static int launchBigVel = 950;
-    private static double currentLauncherVelocity = 0.0;
-    private static double lastTargetVelocity = 0.0;
-    private final static double rampRate = 50.0; // ticks per loop (adjust ramp smoothness)
-    public static double lErrorMargin = 60;
 
     public static double launchPower = 1.0;
     public static double servoPower = 1.0;
+    public static double gateSPower = 0.2;
 
-    private boolean FIELD_CENTRIC;
+    private boolean fieldCentric;
     private boolean twoPlayers = false;
     private boolean aMenuPressed1;
     private boolean bMenuPressed1;
     private boolean aMenuPressed2;
-    private long launcherStartTime = 0;
 
     // Mode states gamepad1
     private boolean feederRunning1 = false;
@@ -77,11 +61,13 @@ public class GregGateTest extends OpMode {
 
     private boolean somethingRunning = false;
 
-    private double feederStart;
+    public static int lErrorMargin = 40;
 
-    public static int feederDelay = 2000;
+    public static int goalXPos = 140, goalYPos = 4;
 
-    public static double gateSPower = 0.2;
+    private double humanStartTime;
+
+    private double targetVelocity;
 
     @Override
     public void init() {
@@ -104,7 +90,7 @@ public class GregGateTest extends OpMode {
     public void init_loop() {
         // Toggle field-centric mode
         if (gamepad1.a && !aMenuPressed1) {
-            FIELD_CENTRIC = !FIELD_CENTRIC;
+            fieldCentric = !fieldCentric;
             aMenuPressed1 = true;
         } else if (!gamepad1.a) {
             aMenuPressed1 = false;
@@ -121,36 +107,29 @@ public class GregGateTest extends OpMode {
         }
 
         // Toggle two player mode
-        if (gamepad2.a && !aMenuPressed2) {
-            twoPlayers = !twoPlayers;
-            aMenuPressed2 = true;
-        } else if (!gamepad2.a) {
-            aMenuPressed2 = false;
-        }
+//        if (gamepad2.a && !aMenuPressed2) {
+//            twoPlayers = !twoPlayers;
+//            aMenuPressed2 = true;
+//        } else if (!gamepad2.a) {
+//            aMenuPressed2 = false;
+//        }
 
-        telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
+        telemetry.addData("Menu: Field Centric Mode", fieldCentric ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
 
         telemetry.addData("Menu: Alliance", robot.alliance == RobotHardware.Alliance.RED ? "RED" : "BLUE");
         telemetry.addLine("Press B to toggle");
 
-        telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
-        telemetry.addLine("Gamepad2: Press A to toggle");
+//        telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
+//        telemetry.addLine("Gamepad2: Press A to toggle");
         telemetry.update();
     }
 
     @Override
     public void start() {
-        drive.setFieldCentric(FIELD_CENTRIC);
+        drive.setFieldCentric(fieldCentric);
 
-        // Set clip angle based on alliance
-        clipAngleClose = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationClose : blueRotationClose;
-        clipAngleFar = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationFar : blueRotationFar;
-
-        telemetry.addData("Field Centric is", FIELD_CENTRIC ? "ON" : "OFF");
-        telemetry.addData("Alliance is", alliance ? "RED" : "BLUE");
-        telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
-        telemetry.update();
+        if (robot.alliance == RobotHardware.Alliance.BLUE) goalYPos = goalXPos;
     }
     @Override
     public void loop() {
@@ -158,7 +137,7 @@ public class GregGateTest extends OpMode {
         somethingRunning = false;
         gamePad1Controls();
 
-        if (twoPlayers) gamepad2Controls();
+        //if (twoPlayers) gamepad2Controls();
 
         telemetryM.update(telemetry);
     }
@@ -171,11 +150,11 @@ public class GregGateTest extends OpMode {
         // --- Rotate to clip angle ---
         if (gamepad1.y) {
             //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);
-            drive.turnInDirection(physics.getHeadingError(144, 0));
-            telemetryM.debug(Math.toDegrees(physics.getHeadingError(144, 0)));
-            telemetryM.debug(Math.toDegrees(physics.getAngleToPoint(144, 0)));
-            telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
-            telemetryM.debug(robot.odo.getPosX(DistanceUnit.INCH), robot.odo.getPosY(DistanceUnit.INCH));
+            drive.turnInDirection(physics.getHeadingError(goalXPos, goalYPos));
+//            telemetryM.debug(Math.toDegrees(physics.getHeadingError(144, 0)));
+//            telemetryM.debug(Math.toDegrees(physics.getAngleToPoint(144, 0)));
+//            telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
+//            telemetryM.debug(robot.odo.getPosX(DistanceUnit.INCH), robot.odo.getPosY(DistanceUnit.INCH));
         } else {
             drive.update(
                     gamepad1.left_stick_x,
@@ -190,8 +169,6 @@ public class GregGateTest extends OpMode {
             feederRunning1 = false;
             humanRunning1 = false;
             stopAllLaunching();
-            currentLauncherVelocity = 0.0;
-            lastTargetVelocity = 0.0;
             return;
         }
 
@@ -205,19 +182,16 @@ public class GregGateTest extends OpMode {
             // If feeder is running, stop it (simulate sleep)
             if (feederRunning1) {
                 feederRunning1 = false;
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                stopIntake();
             }
 
             launcherRunning1 = !launcherRunning1;
             if (launcherRunning1) {
-                launcherStartTime = System.currentTimeMillis();
+                targetVelocity = physics.getVelocityTpS(goalXPos, goalYPos);
+                // velocity (m/s)/circumference(0.096 * PI)
+                targetVelocity = targetVelocity/(0.096 * Math.PI);
             } else {
                 stopAllLaunching();
-                currentLauncherVelocity = 0.0;
-                lastTargetVelocity = 0.0;
             }
         }
         prevA1 = gamepad1.a;
@@ -225,12 +199,8 @@ public class GregGateTest extends OpMode {
         // --- B Toggle (Feeder) ---
         if (gamepad1.b && !prevB1) {
             feederRunning1 = !feederRunning1;
-            if (feederRunning1) feederStart = System.currentTimeMillis();
             if (!feederRunning1) {
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                stopIntake();
             }
         }
         prevB1 = gamepad1.b;
@@ -241,25 +211,18 @@ public class GregGateTest extends OpMode {
             humanRunning1 = !humanRunning1;
 
             if (humanRunning1) {
+                humanStartTime = System.currentTimeMillis();
                 // Turn off launcher + feeder for safety
                 launcherRunning1 = false;
                 feederRunning1 = false;
                 stopAllLaunching();
-                currentLauncherVelocity = 0.0;
-                lastTargetVelocity = 0.0;
             } else {
-                // Human turned off: stop only human motors
-                robot.launcherR.setPower(0.0);
-                robot.launcherL.setPower(0.0);
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                // Human turned off: stop all motors
+                stopAllLaunching();
             }
         }
         prevX1 = gamepad1.x;
 
-        double targetVelocity = physics.getVelocity(144, 0);
         // --- Launcher Running ---
         if (launcherRunning1) {
             somethingRunning = true;
@@ -277,7 +240,6 @@ public class GregGateTest extends OpMode {
         if (feederRunning1) {
             somethingRunning = true;
 
-
             robot.secondUpS.setPower(adjustedServoPower);
             robot.firstUpS.setPower(adjustedServoPower);
             robot.intakeS.setPower(adjustedServoPower);
@@ -286,21 +248,45 @@ public class GregGateTest extends OpMode {
         // --- Human Running (Toggle Mode) ---
         if (humanRunning1) {
             somethingRunning = true;
-            robot.launcherR.setPower(-0.2);
-            robot.launcherL.setPower(-0.2);
-            robot.thirdUpS.setPower(-adjustedServoPower / 4);
+
+            if (humanStartTime < System.currentTimeMillis() - 200) robot.thirdUpS.setPower(0.1);
+            else robot.thirdUpS.setPower(0);
+
+            robot.launcherR.setPower(-launchPower/5);
+            robot.launcherL.setPower(-launchPower/5);
             robot.secondUpS.setPower(-adjustedServoPower / 4);
-            robot.firstUpS.setPower(-adjustedServoPower / 4);
-            robot.intakeS.setPower(-adjustedServoPower / 8);
+            robot.firstUpS.setPower(-adjustedServoPower / 5);
+            robot.intakeS.setPower(0.01);
         }
         telemetryM.addData("Velocity", robot.launcherR.getVelocity());
-        //telemetryM.addData("Predicted Velocity", targetVelocity);
         telemetryM.addData("Error", robot.launcherR.getVelocity()-targetVelocity);
     }
 
 
 
 
+
+    private void resetModes() {
+        launchMode = false;
+        middleMode = false;
+        intakeMode = false;
+        allServosMode = false;
+        allServosAndLaunchMode = false;
+        stopAllLaunching();
+    }
+    private void stopIntake() {
+        robot.secondUpS.setPower(0.0);
+        robot.firstUpS.setPower(0.0);
+        robot.intakeS.setPower(0.0);
+    }
+    private void stopAllLaunching() {
+        robot.launcherR.setPower(0.0);
+        robot.launcherL.setPower(0.0);
+        robot.thirdUpS.setPower(0.0);
+        robot.secondUpS.setPower(0.0);
+        robot.firstUpS.setPower(0.0);
+        robot.intakeS.setPower(0.0);
+    }
     private void gamepad2Controls() {
         double triggerValue = gamepad2.right_trigger;
         double speed = 1.0 - (0.9 * triggerValue);
@@ -401,22 +387,6 @@ public class GregGateTest extends OpMode {
         }
 
         if (!somethingRunning) stopAllLaunching();
-    }
-    private void resetModes() {
-        launchMode = false;
-        middleMode = false;
-        intakeMode = false;
-        allServosMode = false;
-        allServosAndLaunchMode = false;
-        stopAllLaunching();
-    }
-    private void stopAllLaunching() {
-        robot.launcherR.setPower(0.0);
-        robot.launcherL.setPower(0.0);
-        robot.thirdUpS.setPower(0.0);
-        robot.secondUpS.setPower(0.0);
-        robot.firstUpS.setPower(0.0);
-        robot.intakeS.setPower(0.0);
     }
 }
 

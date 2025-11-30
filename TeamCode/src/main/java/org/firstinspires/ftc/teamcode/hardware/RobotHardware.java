@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.robotConfigurations.GiveItANameConfig;
 import org.firstinspires.ftc.teamcode.hardware.robotConfigurations.GregConfig;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.hardware.robotConfigurations.PinkyConfig;
 import org.firstinspires.ftc.teamcode.pedroPathing.pConstants.GiveItANameConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.pConstants.GregConstants;
 import org.firstinspires.ftc.teamcode.pedroPathing.pConstants.PinkyConstants;
+import org.firstinspires.ftc.teamcode.software.TransferData;
 
 public class RobotHardware {
 
@@ -34,7 +36,8 @@ public class RobotHardware {
     // Alliance enum
     public enum Alliance {
         RED,
-        BLUE
+        BLUE,
+        EMPTY
     }
     // Current Alliance
     public Alliance alliance = Alliance.RED;
@@ -52,6 +55,7 @@ public class RobotHardware {
     public DcMotor magazine;
     public DcMotorEx launcher;
     public RevColorSensorV3 intakeSensor, exitSensor;
+    public Servo gateS;
 
     // Sensors
     public GoBildaPinpointDriver odo;
@@ -61,26 +65,14 @@ public class RobotHardware {
     public RobotHardware(HardwareMap hw) {
         this.hw = hw;
 
-        // Detect robot type based on servo name
+        alliance = convertToAlliance(TransferData.getAlliance(hw));
+
+        // Detect robot type based on Right Front name
         detectRobotTypeFromServo();
+
         if (robotType == null) {
-            throw new RuntimeException("Unknown robot: could not detect from servo name!");
+            throw new RuntimeException("Unknown robot: could not detect from Right Front name!");
         }
-
-        // Initialize motors
-        // RF is initialized inside of Configs
-        lf = hw.get(DcMotor.class, "LF");
-        lb = hw.get(DcMotor.class, "LB");
-        rb = hw.get(DcMotor.class, "RB");
-
-        // Apply robot-specific configuration
-        setRobotConfig();
-
-        // Universal motor settings
-        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     private void detectRobotTypeFromServo() {
@@ -142,5 +134,11 @@ public class RobotHardware {
             default:
                 throw new RuntimeException("Unknown robot type for PedroPathing: " + robotType);
         }
+    }
+
+    public Alliance convertToAlliance(int rawA) {
+        if (rawA == 0) return Alliance.RED;
+        if (rawA == 1) return Alliance.BLUE;
+        return Alliance.EMPTY;
     }
 }

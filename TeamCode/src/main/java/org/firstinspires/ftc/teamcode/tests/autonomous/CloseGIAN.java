@@ -1,24 +1,23 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
+import org.firstinspires.ftc.teamcode.opmodes.autonomous.PreloadInShoot;
+import org.firstinspires.ftc.teamcode.software.GiveItAName.MagazinePositionController;
+import org.firstinspires.ftc.teamcode.software.GiveItAName.Sorter;
 import org.firstinspires.ftc.teamcode.software.TransferData;
 
-@Configurable
-@Autonomous(name = "Preload & Shoot", group = "1")
-public class PreloadInShoot extends OpMode {
-
+public class CloseGIAN extends OpMode {
     private RobotHardware robot;
+    private MagazinePositionController magazinePos;
+    private Sorter sorter;
     private TelemetryManager telemetryM;
     private Follower follower;
 
@@ -39,15 +38,27 @@ public class PreloadInShoot extends OpMode {
 
     private Path launchFirst3, intakeBPath, intakeEPath, launchSecond3, goPark;
 
-    private enum State { FOLLOW_PATH, WAIT_LAUNCH, SPINUP, FIRE, PREPARE_INTAKE, INTAKE, PARK, DONE }
-    private State state = State.FOLLOW_PATH;
+    private enum State { GO_SHOOT, SHOOT, INTAKE, PREP_INTAKE, PARK, DONE }
+    private State state = State.GO_SHOOT;
     private long stateStartTime = 0;
     private int amountOfLaunch = 0;
+
+    // Sorter
+    public static int lVel = 1000;
+    public static double magPower = 0.5;
+    private static double gateOpen = 0.25;
+    private static double gateClosed = 0;
+
+    private int numShots = 0;
+
+
 
     @Override
     public void init() {
         robot = new RobotHardware(hardwareMap);
         robot.setRobotConfig();
+        magazinePos = new MagazinePositionController(robot);
+        sorter = new Sorter(robot, magazinePos);
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         follower = robot.setPedroConstants();
 
@@ -95,80 +106,50 @@ public class PreloadInShoot extends OpMode {
         follower.update();
 
         switch (state) {
-            case FOLLOW_PATH:
+            case GO_SHOOT:
                 if (pathDone()) {
-                    runServosAt(0);
-                    nextState(State.WAIT_LAUNCH);
+                    nextState(State.SHOOT);
                 }
                 break;
-
-            case WAIT_LAUNCH:
-                if (timeElapsed(WAIT_BEFORE_LAUNCH_MS)) nextState(State.SPINUP);
-                break;
-
-            case SPINUP:
-                runLaunchers();
-                runServosAt(-0.5);
-                robot.thirdUpS.setPower(-0.01);
-                if (timeElapsed(spinUpTime)) nextState(State.FIRE);
-                break;
-
-            case FIRE:
-                if (Math.abs(closeVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(closeVelocity-robot.launcherL.getVelocity())<=lErrorMargin) {
-                    robot.thirdUpS.setPower(gateSPower);
-                    runServos();
-                } else robot.thirdUpS.setPower(0);
-                if (timeElapsed(launchingDuration)) {
-                    amountOfLaunch++;
-                    stopLaunching();
-                    if (amountOfLaunch == 2) {
+            case SHOOT:
+                warmUpLauncher();
+                if (stateStartTime - System.currentTimeMillis() < 500) break;
+                if (!shootBall()) stateStartTime = System.currentTimeMillis();
+                if (stateStartTime - System.currentTimeMillis() < 1000) {
+                    numShots++;
+                    stopLauncher();
+                    if (numShots == 1) {
+                        follower.followPath(intakeBPath);
+                        nextState(State.PREP_INTAKE);
+                    }
+                    else if (numShots == 2) {
                         follower.followPath(goPark);
                         nextState(State.PARK);
-                    } else {
-                        follower.followPath(intakeBPath);
-                        nextState(State.PREPARE_INTAKE);
                     }
 
                 }
                 break;
-
-            case PREPARE_INTAKE:
+            case PREP_INTAKE:
                 if (pathDone()) {
-                    runServos();
                     follower.followPath(intakeEPath);
                     nextState(State.INTAKE);
                 }
                 break;
-
             case INTAKE:
-                if (pathDone()) {
+                if (runIntake() || pathDone()) {
                     follower.followPath(launchSecond3);
-                    nextState(State.FOLLOW_PATH);
+                    nextState(State.GO_SHOOT);
                 }
                 break;
-
             case PARK:
                 if (pathDone()) nextState(State.DONE);
-
                 break;
-
             case DONE:
                 requestOpModeStop();
                 break;
         }
-        telemetryM.debug(follower.getPose());
-        telemetryM.update(telemetry);
+
     }
-
-    // === Utility methods ===
-
-    private Path makePath(Pose start, Pose end, double startH, double endH, double velocity) {
-        Path p = new Path(new BezierLine(start, end));
-        p.setLinearHeadingInterpolation(Math.toRadians(startH), Math.toRadians(endH));
-        p.setVelocityConstraint(velocity);
-        return p;
-    }
-
     private void flipForAlliance() {
         if (robot.alliance == RobotHardware.Alliance.BLUE) {
             startY = -startY;
@@ -183,46 +164,50 @@ public class PreloadInShoot extends OpMode {
         }
     }
 
-    private boolean pathDone() {
-        return !follower.isBusy();
+    private Path makePath(Pose start, Pose end, double startH, double endH, double velocity) {
+        Path p = new Path(new BezierLine(start, end));
+        p.setLinearHeadingInterpolation(Math.toRadians(startH), Math.toRadians(endH));
+        p.setVelocityConstraint(velocity);
+        return p;
     }
-
-    private boolean timeElapsed(double ms) {
-        return System.currentTimeMillis() - stateStartTime >= ms;
-    }
-
     private void nextState(State next) {
         state = next;
         stateStartTime = System.currentTimeMillis();
     }
-
-    private void runLaunchers() {
-        robot.launcherR.setVelocity(closeVelocity);
-        robot.launcherL.setVelocity(closeVelocity);
+    private boolean pathDone() {
+        return !follower.isBusy();
     }
 
-    private void runServos() {
-        //robot.thirdUpS.setPower(servoPower);
-        robot.secondUpS.setPower(servoPower);
-        robot.firstUpS.setPower(servoPower);
-        robot.intakeS.setPower(servoPower);
-    }
+    private boolean warmUpLauncher() {
+        robot.launcher.setVelocity(lVel);
 
-    private void stopLaunching() {
-        runLaunchersAt(0);
-        runServosAt(0);
-        robot.thirdUpS.setPower(0);
+        return sorter.moveNextPatternToExit(magPower);
     }
+    private boolean shootBall() {
+        if (magazinePos.isBusy()) return true;
 
-    private void runLaunchersAt(double velocity) {
-        robot.launcherR.setVelocity(velocity);
-        robot.launcherL.setVelocity(velocity);
+        robot.gateS.setPosition(gateOpen);
+
+        if (sorter.checkAndClearExit()) {
+            robot.gateS.setPosition(gateClosed);
+            return warmUpLauncher();
+        }
+        return true;
     }
-
-    private void runServosAt(double power) {
-        //robot.thirdUpS.setPower(power);
-        robot.secondUpS.setPower(power);
-        robot.firstUpS.setPower(power);
-        robot.intakeS.setPower(power/10);
+    private void stopLauncher() {
+        robot.launcher.setPower(0);
+    }
+    private boolean runIntake() {
+        // Todo add intake
+        if (magazinePos.isBusy()) return false;
+        if (!sorter.detectIntake()) return false;
+        boolean isFull = !sorter.moveEmptyToIntake(magPower);
+        if (isFull) {
+            stopIntake();
+        }
+        return isFull;
+    }
+    private void stopIntake() {
+        // Todo stop intake
     }
 }

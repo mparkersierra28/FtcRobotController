@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous.pastComp;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -13,28 +13,33 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
-@Autonomous(name = "Far Side Preload Blue", group = "Old")
-public class farSideBlue extends OpMode {
+@Autonomous(name = "Far Side Preload Unified", group = "Old")
+public class FarSidePreloadUnified extends OpMode {
 
     private RobotHardware robot;
+    private TelemetryManager telemetryM;
+    private Follower follower;
+
+    // Alliance selection
+    private RobotHardware.Alliance alliance = RobotHardware.Alliance.BLUE; // default
+    private boolean allianceSelected = false;
+
+    // Motion & launcher parameters
     public static double movVel = 15;
     public static double closeVelocity = 700;
     public static double servoPower = 1;
     public static double spinUpTime = 2000;
-
     public static long WAIT_BEFORE_LAUNCH_MS = 3000;
 
-    public static double startX = 0, startY = 0, startHeading = 0;
-    public static double path1X = -29, path1Y = -31, path1Heading = 50;
-    public static double path2X = 60, path2Y = -20, path2Heading = 90;
-    public static double finalX = -56, finalY = -31, finalHeading = 0;
+    // Base starting coordinates (RED values)
+    public static double startX = 0, startY = 31, startHeading = -50;
+    public static double path1X = -29, path1Y = 31, path1Heading = -50;
+    public static double finalX = -56, finalY = 31, finalHeading = 0;
 
     private Path launchFirst3;
     private Path goPark;
-    private Follower follower;
-    private TelemetryManager telemetryM;
 
-    // States for the loop
+    // State machine
     private enum State { INIT_PATH, FOLLOW_PATH, ADJUST_POS, RUN_LAUNCHERS, RUN_SERVOS, PARK, DONE }
     private State currentState = State.INIT_PATH;
     private long stateStartTime = 0;
@@ -43,20 +48,44 @@ public class farSideBlue extends OpMode {
     public void init() {
         robot = new RobotHardware(hardwareMap);
         robot.setRobotConfig();
-
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-
         follower = robot.setPedroConstants();
+
+        telemetry.addLine("Press A for RED, B for BLUE");
+        telemetry.update();
+    }
+
+    @Override
+    public void init_loop() {
+        // Alliance selection during init
+        if (gamepad1.a) {
+            alliance = RobotHardware.Alliance.RED;
+            allianceSelected = true;
+        } else if (gamepad1.b) {
+            alliance = RobotHardware.Alliance.BLUE;
+            allianceSelected = true;
+        }
+
+        telemetry.addData("Alliance Selected", allianceSelected ? alliance : "None");
+        telemetry.update();
     }
 
     @Override
     public void start() {
+        // Flip coordinates & headings for BLUE alliance
+        if (alliance == RobotHardware.Alliance.BLUE) {
+            startY = -startY;
+            path1Y = -path1Y;
+            finalY = -finalY;
+            startHeading = -startHeading;
+            path1Heading = -path1Heading;
+            finalHeading = -finalHeading;
+        }
+
         follower.setStartingPose(new Pose(startX, startY, startHeading));
 
         Pose launchingPos = new Pose(path1X, path1Y);
-        //follower.activateAllPIDFs();
-        launchFirst3 = new Path(new BezierLine(new Pose(startX, startY),
-                launchingPos));
+        launchFirst3 = new Path(new BezierLine(new Pose(startX, startY), launchingPos));
         launchFirst3.setLinearHeadingInterpolation(startHeading, Math.toRadians(path1Heading));
         launchFirst3.setVelocityConstraint(movVel);
 
@@ -64,21 +93,16 @@ public class farSideBlue extends OpMode {
         goPark.setLinearHeadingInterpolation(Math.toRadians(path1Heading), Math.toRadians(finalHeading));
         goPark.setVelocityConstraint(movVel);
 
-
-
-        currentState = State.FOLLOW_PATH; // start path following
+        currentState = State.FOLLOW_PATH;
         follower.followPath(launchFirst3);
     }
 
     @Override
     public void loop() {
-
         switch (currentState) {
-
             case FOLLOW_PATH:
-                if (follower.isBusy()) {
-                    follower.update();
-                } else {
+                if (follower.isBusy()) follower.update();
+                else {
                     follower.update();
                     currentState = State.ADJUST_POS;
                     stateStartTime = System.currentTimeMillis();
@@ -98,7 +122,6 @@ public class farSideBlue extends OpMode {
                 telemetryM.debug("Launchers");
                 runLaunchers();
                 follower.update();
-                // Wait 1 second
                 if (System.currentTimeMillis() - stateStartTime >= spinUpTime) {
                     currentState = State.RUN_SERVOS;
                     stateStartTime = System.currentTimeMillis();
@@ -108,27 +131,23 @@ public class farSideBlue extends OpMode {
             case RUN_SERVOS:
                 telemetryM.debug("Servos");
                 runServos();
-                // Wait 1 second (example)
                 if (System.currentTimeMillis() - stateStartTime >= 6000) {
                     stopLaunching();
                     follower.followPath(goPark);
                     currentState = State.PARK;
-
-
                 }
                 break;
+
             case PARK:
-                if (follower.isBusy()) {
-                    follower.update();
-                } else {
-                    currentState = State.DONE;
-                }
+                if (follower.isBusy()) follower.update();
+                else currentState = State.DONE;
                 break;
+
             case DONE:
-                // Finished autonomous, do nothing
                 requestOpModeStop();
                 break;
         }
+
         telemetryM.update(telemetry);
     }
 

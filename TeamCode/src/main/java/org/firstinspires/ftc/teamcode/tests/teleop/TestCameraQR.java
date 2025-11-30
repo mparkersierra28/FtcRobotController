@@ -72,7 +72,7 @@ public class TestCameraQR extends OpMode {
         } else drive.stopMotors();
         double v = 0;
         if (gamepad1.right_bumper) {
-            v = physics.getVelocity(144, 0);
+            v = physics.getVelocityTpS(144, 0);
             if (v!=-1){
                 robot.launcherL.setVelocity(v/k);
                 robot.launcherR.setVelocity(v/k);

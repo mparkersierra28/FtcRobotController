@@ -12,12 +12,14 @@ import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.GiveItAName.MagazinePositionController;
 import org.firstinspires.ftc.teamcode.software.GiveItAName.Sorter;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
+import org.firstinspires.ftc.teamcode.software.Physics;
 
 @Configurable
 @TeleOp (name = "GIAN Prototype", group = "Test")
 public class GiveItANamePrototype extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
+    private Physics physics;
     private CameraQR camera;
     private Sorter sorter;
     private MagazinePositionController magazinePos;
@@ -46,6 +48,10 @@ public class GiveItANamePrototype extends OpMode {
 
     // Launching
     private boolean warmUpTriggered = false;
+    private static double gateOpen = 0.25;
+    private static double gateClosed = 0;
+
+    public static int goalXPos = 140, goalYPos = 4;
 
     @Override
     public void init() {
@@ -57,6 +63,8 @@ public class GiveItANamePrototype extends OpMode {
         drive = new MecanumDrive(robot);
 
         camera = new CameraQR(robot);
+
+        physics = new Physics(robot);
 
         sorter = new Sorter(robot, magazinePos);
 
@@ -124,7 +132,7 @@ public class GiveItANamePrototype extends OpMode {
     private void gamePad1Controls() {
         if (gamepad1.y) {
             //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);
-            drive.turnInDirection(camera.getQRDir());
+            drive.turnInDirection(physics.getHeadingError(goalXPos, goalYPos));
             telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
         } else {
             drive.update(
@@ -202,21 +210,21 @@ public class GiveItANamePrototype extends OpMode {
     private void warmUpLauncher() {
         robot.launcher.setVelocity(lVel);
 
-        if (sorter.moveNextPatternToExit(magPower)) aToggleState = 3;
+        if (!sorter.moveNextPatternToExit(magPower)) aToggleState = 3;
     }
     private void shootBall() {
         if (magazinePos.isBusy()) return;
 
-        //Todo gate servo
+        robot.gateS.setPosition(gateOpen);
 
         if (sorter.checkAndClearExit()) {
-            //Todo close gate
+            robot.gateS.setPosition(gateClosed);
             warmUpLauncher();
         }
 
     }
     private void stopAllLaunching() {
-        // Todo close gate servo
+        robot.gateS.setPosition(gateClosed);
         robot.launcher.setPower(0);
 
         warmUpTriggered = false;

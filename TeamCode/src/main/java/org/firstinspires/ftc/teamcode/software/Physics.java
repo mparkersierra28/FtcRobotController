@@ -4,7 +4,6 @@ import com.bylazar.configurables.annotations.Configurable;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
 @Configurable
@@ -13,11 +12,12 @@ public class Physics {
     private CameraQR camera;
 
     public static double lAngle = Math.toRadians(50);
-    public static double targetHeight = 100;
+    public static double targetHeight = 50;
 
     // Gravity in cm/s^2
-    private static final double g = 980.665; // approximate gravity in cm/s^2
+    private final double g = 980.665; // approximate gravity in cm/s^2
 
+    public static double k = 0.6;
     public Physics(RobotHardware robot) {
         this.robot = robot;
         this.camera = new CameraQR(robot);
@@ -27,11 +27,13 @@ public class Physics {
      * Calculates the required initial velocity (u) to hit a target.
      * @return velocity in cm/s
      */
-    public double getVelocity(double targetX, double targetY) {
+    public double getVelocityTpS(double targetX, double targetY) {
+        // It is in Inches
         robot.odo.update();
         // Get horizontal distance to QR
         double x = getDistanceToPoint(targetX, targetY);
-        if (x < 0.5) return -1; // no valid target / too close to risk it
+
+        if (x < 40) return -1; // no valid target / too close to risk it
 
         // Projectile equation: y = tan(q) * x - (g x^2) / (2 u^2 cos^2(q))
         // Solve for u:
@@ -39,6 +41,10 @@ public class Physics {
         if (denominator <= 0) return -1; // physically impossible
 
         double u = x * Math.sqrt(g / (2 * Math.pow(Math.cos(lAngle), 2) * denominator));
+
+        // velocity (m/s)/circumference(0.096 * PI)
+        u = (u / (0.096 * Math.PI)) * 60 * k;
+
         return u;
     }
 
