@@ -56,6 +56,7 @@ public class RobotHardware {
     public DcMotorEx launcher;
     public RevColorSensorV3 intakeSensor, exitSensor;
     public Servo gateS;
+    public DcMotorEx intakeRS, intakeLS;
 
     // Sensors
     public GoBildaPinpointDriver odo;

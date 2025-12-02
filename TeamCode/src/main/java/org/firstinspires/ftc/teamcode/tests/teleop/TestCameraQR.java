@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tests.teleop;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 import org.firstinspires.ftc.teamcode.software.Physics;
+@Disabled
 @Configurable
 @TeleOp(name="Test Camera QR", group="Utilities")
 public class TestCameraQR extends OpMode {

@@ -69,6 +69,9 @@ public class GregGateTest extends OpMode {
 
     private double targetVelocity;
 
+    public static int launchBigVel = 950;
+    public static int launchSmallVel = 750;
+
     @Override
     public void init() {
         // Initialize robot hardware
@@ -187,9 +190,9 @@ public class GregGateTest extends OpMode {
 
             launcherRunning1 = !launcherRunning1;
             if (launcherRunning1) {
-                targetVelocity = physics.getVelocityTpS(goalXPos, goalYPos);
-                // velocity (m/s)/circumference(0.096 * PI)
-                targetVelocity = targetVelocity/(0.096 * Math.PI);
+//                targetVelocity = physics.getVelocityTpS(goalXPos, goalYPos);
+//                // velocity (m/s)/circumference(0.096 * PI)
+//                targetVelocity = targetVelocity/(0.096 * Math.PI);
             } else {
                 stopAllLaunching();
             }
@@ -222,7 +225,7 @@ public class GregGateTest extends OpMode {
             }
         }
         prevX1 = gamepad1.x;
-
+        double targetVelocity = gamepad1.dpad_down ? launchBigVel : launchSmallVel;
         // --- Launcher Running ---
         if (launcherRunning1) {
             somethingRunning = true;

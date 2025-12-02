@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode.hardware.robotConfigurations;
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -46,5 +48,8 @@ public class GiveItANameConfig {
         robot.exitSensor = hw.get(RevColorSensorV3.class, "exitSensor");
 
         robot.gateS = hw.get(Servo.class, "gateS");
+        robot.intakeLS = hw.get(DcMotorEx.class, "intakeLS");
+        robot.intakeRS = hw.get(DcMotorEx.class, "intakeRS");
+        robot.intakeRS.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 }

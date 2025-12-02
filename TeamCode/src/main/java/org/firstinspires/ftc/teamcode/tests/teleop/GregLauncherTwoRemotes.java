@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.tests.teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
+@Disabled
 @TeleOp (name="Greg Two Remote", group="Greg")
 public class GregLauncherTwoRemotes extends OpMode {
     private RobotHardware robot;

@@ -53,6 +53,8 @@ public class GiveItANamePrototype extends OpMode {
 
     public static int goalXPos = 140, goalYPos = 4;
 
+    public static double intakePow = 0.2;
+
     @Override
     public void init() {
         // Initialize robot hardware
@@ -185,7 +187,8 @@ public class GiveItANamePrototype extends OpMode {
     }
 
     private void intake() {
-        // TODO add intake
+        robot.intakeLS.setPower(intakePow);
+        robot.intakeRS.setPower(intakePow);
 
         if (magazinePos.isBusy()) return;
         if (!sorter.detectIntake()) return;
@@ -196,7 +199,8 @@ public class GiveItANamePrototype extends OpMode {
 
     }
     private void stopIntake() {
-        // TODO
+        robot.intakeLS.setPower(0);
+        robot.intakeRS.setPower(0);
     }
     // This runs for a few seconds after stopIntake
     private void continueIntakeAfterStop() {

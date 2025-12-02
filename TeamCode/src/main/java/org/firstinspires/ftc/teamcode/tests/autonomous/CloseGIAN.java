@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.tests.autonomous;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -14,6 +16,8 @@ import org.firstinspires.ftc.teamcode.software.GiveItAName.MagazinePositionContr
 import org.firstinspires.ftc.teamcode.software.GiveItAName.Sorter;
 import org.firstinspires.ftc.teamcode.software.TransferData;
 
+@Configurable
+@Autonomous (name = "Close GiveItAName", group = "GIAN")
 public class CloseGIAN extends OpMode {
     private RobotHardware robot;
     private MagazinePositionController magazinePos;
