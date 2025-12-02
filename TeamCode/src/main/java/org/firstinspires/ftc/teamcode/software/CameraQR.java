@@ -14,9 +14,10 @@ public class CameraQR {
     public static int hxCenter = 160;
     public static int hyCenter = 120;
 
-    private int patternID = 0;
+    private final int allianceId;
     public static int blueID = 1;
     public static int redID = 2;
+    public static int[] motifsIds = {3, 4, 5};
     public static int margin = 10; // deadzone margin in pixels
 
     // Physical parameters
@@ -27,26 +28,40 @@ public class CameraQR {
     public CameraQR(RobotHardware rob) {
         robot = rob;
         robot.huskyLens.selectAlgorithm(HuskyLens.Algorithm.TAG_RECOGNITION);
-        patternID = robot.alliance == RobotHardware.Alliance.RED ? redID : blueID;
+        allianceId = robot.alliance == RobotHardware.Alliance.RED ? redID : blueID;
     }
 
     /**
      * Returns the closest valid QR block detected by the HuskyLens.
      */
-    private HuskyLens.Block getClosestQRBlock() {
+    private HuskyLens.Block filterQR(int id) {
         HuskyLens.Block[] blocks = robot.huskyLens.blocks();
-        if (blocks == null || blocks.length == 0) return null;
+        if (blocks == null) return null;
 
-        HuskyLens.Block closest = null;
+        for (HuskyLens.Block block : blocks) {
+            if (block != null && block.id == id) {
+                return block;  // return immediately when found
+            }
+        }
+        return null;
+    }
+    private int findMatchingId(int[] allowedIds) {
+        HuskyLens.Block[] blocks = robot.huskyLens.blocks();
+        if (blocks == null) return -1;
+
         for (HuskyLens.Block block : blocks) {
             if (block == null) continue;
-            if (closest == null || block.height > closest.height) {
-                closest = block;
+
+            for (int id : allowedIds) {
+                if (block.id == id) {
+                    return id;  // Found one of the target IDs
+                }
             }
-            if (block.id == patternID) closest = block;
         }
-        return closest;
+
+        return -1;  // None found
     }
+
 
     /**
      * Converts block coordinates into camera space (Xc, Yc, Zc).
@@ -70,7 +85,7 @@ public class CameraQR {
      * @return 1 if to the left (CCW), -1 if to the right (CW), 0 if centered
      */
     public double getQRDir() {
-        HuskyLens.Block block = getClosestQRBlock();
+        HuskyLens.Block block = filterQR(allianceId);
         if (block == null) return 0;
 
         int dx = block.x - hxCenter;
@@ -82,7 +97,7 @@ public class CameraQR {
      * Calculates the horizontal distance to the QR code (in cm).
      */
     public double getHorizontalDis() {
-        HuskyLens.Block block = getClosestQRBlock();
+        HuskyLens.Block block = filterQR(allianceId);
         if (block == null) return -1;
 
         double[] coords = getCameraCoordinates(block);
@@ -100,7 +115,7 @@ public class CameraQR {
      * Calculates the exact angle (in degrees) the robot must face to look directly at the QR.
      */
     public double getTargetAngleDeg() {
-        HuskyLens.Block block = getClosestQRBlock();
+        HuskyLens.Block block = filterQR(allianceId);
         if (block == null) return -1;
 
         double[] coords = getCameraCoordinates(block);
@@ -116,5 +131,11 @@ public class CameraQR {
         // combine and normalize
         double targetHeadingRad = normalizeAngle(robotHeadingRad + angleOffset);
         return Math.toDegrees(targetHeadingRad);
+    }
+
+    public int getMotif() {
+        int motif = findMatchingId(motifsIds);
+        return motif - 3;
+
     }
 }

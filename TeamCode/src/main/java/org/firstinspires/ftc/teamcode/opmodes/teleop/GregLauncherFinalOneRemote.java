@@ -18,33 +18,26 @@ public class GregLauncherFinalOneRemote extends OpMode {
     private CameraQR camera;
 
     public TelemetryManager telemetryM;
+
     // Launching Degree Position
-    private boolean alliance = true; // true = red
     public static double redRotationClose = -40;
     public static double redRotationFar = -60;
 
     public static double blueRotationClose = 40;
     public static double blueRotationFar = 60;
 
-    private double clipAngleClose;
-    private double clipAngleFar;
-
     // Launcher Velocities
     public static int launchSmallVel = 750;
     public static int launchBigVel = 950;
-    private static double currentLauncherVelocity = 0.0;
-    private static double lastTargetVelocity = 0.0;
-    private final static double rampRate = 50.0; // ticks per loop (adjust ramp smoothness)
 
     public static double launchPower = 1.0;
     public static double servoPower = 1.0;
 
-    private boolean FIELD_CENTRIC;
+    private boolean fieldCentric;
     private boolean twoPlayers = false;
     private boolean aMenuPressed1;
     private boolean bMenuPressed1;
     private boolean aMenuPressed2;
-    private long launcherStartTime = 0;
 
     // Mode states gamepad1
     private boolean feederRunning1 = false;
@@ -90,7 +83,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
     public void init_loop() {
         // Toggle field-centric mode
         if (gamepad1.a && !aMenuPressed1) {
-            FIELD_CENTRIC = !FIELD_CENTRIC;
+            fieldCentric = !fieldCentric;
             aMenuPressed1 = true;
         } else if (!gamepad1.a) {
             aMenuPressed1 = false;
@@ -114,7 +107,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
             aMenuPressed2 = false;
         }
 
-        telemetry.addData("Menu: Field Centric Mode", FIELD_CENTRIC ? "ON" : "OFF");
+        telemetry.addData("Menu: Field Centric Mode", fieldCentric ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
 
         telemetry.addData("Menu: Alliance", robot.alliance == RobotHardware.Alliance.RED ? "RED" : "BLUE");
@@ -127,14 +120,10 @@ public class GregLauncherFinalOneRemote extends OpMode {
 
     @Override
     public void start() {
-        drive.setFieldCentric(FIELD_CENTRIC);
+        drive.setFieldCentric(fieldCentric);
 
-        // Set clip angle based on alliance
-        clipAngleClose = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationClose : blueRotationClose;
-        clipAngleFar = (robot.alliance == RobotHardware.Alliance.RED) ? redRotationFar : blueRotationFar;
 
-        telemetry.addData("Field Centric is", FIELD_CENTRIC ? "ON" : "OFF");
-        telemetry.addData("Alliance is", alliance ? "RED" : "BLUE");
+        telemetry.addData("Field Centric is", fieldCentric ? "ON" : "OFF");
         telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
         telemetry.update();
     }
@@ -167,14 +156,13 @@ public class GregLauncherFinalOneRemote extends OpMode {
                     gamepad1.right_stick_y
             );
         }
+
         // --- Emergency Stop ---
         if (gamepad1.left_bumper) {
             launcherRunning1 = false;
             feederRunning1 = false;
             humanRunning1 = false;
             stopAllLaunching();
-            currentLauncherVelocity = 0.0;
-            lastTargetVelocity = 0.0;
             return;
         }
 
@@ -195,12 +183,8 @@ public class GregLauncherFinalOneRemote extends OpMode {
             }
 
             launcherRunning1 = !launcherRunning1;
-            if (launcherRunning1) {
-                launcherStartTime = System.currentTimeMillis();
-            } else {
+            if (!launcherRunning1) {
                 stopAllLaunching();
-                currentLauncherVelocity = 0.0;
-                lastTargetVelocity = 0.0;
             }
         }
         prevA1 = gamepad1.a;
@@ -227,8 +211,6 @@ public class GregLauncherFinalOneRemote extends OpMode {
                 launcherRunning1 = false;
                 feederRunning1 = false;
                 stopAllLaunching();
-                currentLauncherVelocity = 0.0;
-                lastTargetVelocity = 0.0;
             } else {
                 // Human turned off: stop only human motors
                 robot.launcherR.setPower(0.0);

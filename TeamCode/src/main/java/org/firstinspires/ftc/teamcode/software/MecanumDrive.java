@@ -5,7 +5,6 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
@@ -19,10 +18,11 @@ public class MecanumDrive {
     public static boolean detailedPanels;
 
     // State variables
-    private boolean FIELD_CENTRIC = false;
+    private boolean fieldCentric = false;
     private double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
     private double strafe, forward, rotate;
     private boolean joystickActive;
+    private double headingOffset;
 
     // Constructors
     public MecanumDrive(RobotHardware robot) {
@@ -32,7 +32,8 @@ public class MecanumDrive {
 
     // Allows teleop to adjust drive mode or speed multiplier
     public void setFieldCentric(boolean fieldCentric) {
-        this.FIELD_CENTRIC = fieldCentric;
+        headingOffset = (robot.alliance == RobotHardware.Alliance.RED ? -Math.PI/2 : Math.PI/2);
+        this.fieldCentric = fieldCentric;
     }
 
     // Main update method (called each loop)
@@ -51,7 +52,7 @@ public class MecanumDrive {
                 Math.abs(rotate) > DEADZONE;
 
         if (joystickActive) {
-            if (FIELD_CENTRIC) {
+            if (fieldCentric) {
                 fieldCentricDrive(strafe, forward, rotate);
             } else {
                 robotCentricDrive(strafe, forward, rotate);
@@ -75,8 +76,13 @@ public class MecanumDrive {
     private void fieldCentricDrive(double strafe, double forward, double rotate) {
         robot.odo.update();
         Pose2D robotPosition = robot.odo.getPosition();
+
         double headingRad = robotPosition.getHeading(AngleUnit.RADIANS);
 
+        // Rotate field-frame so up = -90 / 90 degrees from up
+        headingRad += headingOffset;
+
+        // Standard field-centric rotation
         double cosA = Math.cos(-headingRad);
         double sinA = Math.sin(-headingRad);
 
@@ -90,6 +96,7 @@ public class MecanumDrive {
 
         applyMotorPowers();
     }
+
 
     // Rotates the robot to a target heading (degrees)
     public void turnToAngle(double targetAngleDeg) {
@@ -120,7 +127,7 @@ public class MecanumDrive {
         robotCentricDrive(0, 0, -turnPower);
     }
     public void turnInDirection(double direction) {
-        robotCentricDrive(0, 0, direction*0.1);
+        robotCentricDrive(0, 0, (direction > 0 ? -1 : 1)*0.1);
     }
 
 

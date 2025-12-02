@@ -15,9 +15,17 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 public class GregConfig {
     public static void apply(RobotHardware robot, HardwareMap hw) {
         robot.rf = hw.get(DcMotor.class, "greg");
+        robot.lf = hw.get(DcMotor.class, "LF");
+        robot.lb = hw.get(DcMotor.class, "LB");
+        robot.rb = hw.get(DcMotor.class, "RB");
         // === Motor Direction ===
         robot.lf.setDirection(DcMotor.Direction.REVERSE);
         robot.lb.setDirection(DcMotor.Direction.REVERSE);
+
+        robot.lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
         // === Odometry ===
@@ -28,7 +36,7 @@ public class GregConfig {
                 GoBildaPinpointDriver.EncoderDirection.REVERSED
         );
         robot.odo.setOffsets(-4.75, -2.0, DistanceUnit.INCH);
-        robot.odo.resetPosAndIMU();
+        //robot.odo.resetPosAndIMU();
 
         // Launching stuff
         robot.launcherR = hw.get(DcMotorEx.class, "launcherR");

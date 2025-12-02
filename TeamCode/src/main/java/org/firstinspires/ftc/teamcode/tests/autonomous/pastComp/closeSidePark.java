@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tests.autonomous;
+package org.firstinspires.ftc.teamcode.tests.autonomous.pastComp;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -8,10 +8,13 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 
+
+@Disabled
 @Configurable
 @Autonomous(name = "Close Side Park Red", group = "Old")
 public class closeSidePark extends OpMode {
