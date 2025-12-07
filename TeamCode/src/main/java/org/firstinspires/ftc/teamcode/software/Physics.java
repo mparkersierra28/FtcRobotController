@@ -13,11 +13,12 @@ public class Physics {
 
     public static double lAngle = Math.toRadians(50);
     public static double targetHeight = 50;
-
+    public static double targety = 110;
+    public static double dragconst = 0.00109;
     // Gravity in cm/s^2
     private final double g = 980.665; // approximate gravity in cm/s^2
 
-    public static double k = 0.6;
+    public static double k = 1.25;
     public Physics(RobotHardware robot) {
         this.robot = robot;
         this.camera = new CameraQR(robot);
@@ -42,12 +43,25 @@ public class Physics {
 
         double u = x * Math.sqrt(g / (2 * Math.pow(Math.cos(lAngle), 2) * denominator));
 
-        // velocity (m/s)/circumference(0.096 * PI)
-        u = (u / (0.096 * Math.PI)) * 60 * k;
+        // velocity (cm/s)/circumference(0.096 * PI)
+        u = (u / (0.096)) * 28 * k;
 
         return u;
     }
 
+    /**
+     * Calculates vel using drag
+     * @param targetX how far away the goal x is
+     * @return vel for
+     */
+    public double getVelocityTpS(double targetX) {
+        double alphafunction = Math.exp((dragconst*targetX)/Math.cos(lAngle));
+
+        double launchvelnumerator = g*((alphafunction - 1)*(alphafunction - 1));
+        double launchveldenominator = 2*dragconst*dragconst*(30.48 + (Math.sin(lAngle)/dragconst)*Math.log(alphafunction)-1.1);
+        if (launchveldenominator <= 0) return -1;
+        return((Math.sqrt(launchvelnumerator/launchveldenominator))/30.159)*28 * k;
+    }
     /**
      * Returns the angle (in radians) from the robot's current odometry position
      * to a target coordinate in YOUR coordinate system:
@@ -96,8 +110,8 @@ public class Physics {
      *   Y = left
      */
     public double getDistanceToPoint(double targetX, double targetY) {
-        double robotX = robot.odo.getPosX(DistanceUnit.INCH);
-        double robotY = robot.odo.getPosY(DistanceUnit.INCH);
+        double robotX = robot.odo.getPosX(DistanceUnit.CM);
+        double robotY = robot.odo.getPosY(DistanceUnit.CM);
 
         double dx = targetX - robotX;  // forward distance
         double dy = targetY - robotY;  // left distance

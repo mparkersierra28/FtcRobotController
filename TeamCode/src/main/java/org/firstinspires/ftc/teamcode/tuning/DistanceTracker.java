@@ -28,6 +28,7 @@ public class DistanceTracker extends OpMode {
         startPose = follower.getPose();
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        follower.setStartingPose(new Pose(72, 72, 0));
     }
 
     @Override

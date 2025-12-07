@@ -30,7 +30,7 @@ public class GregGateTest extends OpMode {
     public static double servoPower = 1.0;
     public static double gateSPower = 0.2;
 
-    private boolean fieldCentric;
+    private boolean fieldCentric = true;
     private boolean twoPlayers = false;
     private boolean aMenuPressed1;
     private boolean bMenuPressed1;
@@ -66,11 +66,9 @@ public class GregGateTest extends OpMode {
     public static int goalXPos = 140, goalYPos = 4;
 
     private double humanStartTime;
-
-    private double targetVelocity;
-
-    public static int launchBigVel = 950;
+    public static int launchBigVel = 920;
     public static int launchSmallVel = 750;
+    public static int launchReallyClose = 680;
 
     @Override
     public void init() {
@@ -225,13 +223,14 @@ public class GregGateTest extends OpMode {
             }
         }
         prevX1 = gamepad1.x;
-        double targetVelocity = gamepad1.dpad_down ? launchBigVel : launchSmallVel;
+        double targetVelocity = gamepad1.dpad_down ? launchBigVel : (gamepad1.dpad_up ? launchReallyClose : launchSmallVel);
+
         // --- Launcher Running ---
         if (launcherRunning1) {
             somethingRunning = true;
             if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=lErrorMargin){
                 robot.thirdUpS.setPower(gateSPower);
-                gamepad1.rumble(500);
+                gamepad1.rumble(0.6, 0.6, 40);
             } else robot.thirdUpS.setPower(0);
 
 
@@ -252,8 +251,8 @@ public class GregGateTest extends OpMode {
         if (humanRunning1) {
             somethingRunning = true;
 
-            if (humanStartTime < System.currentTimeMillis() - 200) robot.thirdUpS.setPower(0.1);
-            else robot.thirdUpS.setPower(0);
+            if (humanStartTime < System.currentTimeMillis() - 500) robot.thirdUpS.setPower(0.1);
+            else robot.thirdUpS.setPower(-0.1);
 
             robot.launcherR.setPower(-launchPower/5);
             robot.launcherL.setPower(-launchPower/5);

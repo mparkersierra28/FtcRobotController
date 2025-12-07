@@ -142,4 +142,5 @@ public class RobotHardware {
         if (rawA == 1) return Alliance.BLUE;
         return Alliance.EMPTY;
     }
+
 }

@@ -9,7 +9,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.TransferData;
@@ -22,20 +21,22 @@ public class PreloadInShoot extends OpMode {
     private TelemetryManager telemetryM;
     private Follower follower;
 
-    private boolean allianceSelected = false;
-
     // Tunables: The speed the robot is moving; the speed of the intake's rotation; how fast the robot shoots up close; the power of the servos.
-    public static double movVel = 15, intakeVel = 15, closeVelocity = 700, servoPower = 1;
-    public static double spinUpTime = 2000, WAIT_BEFORE_LAUNCH_MS = 2000;
-    public static int launchingDuration = 4000;
-    public static double lErrorMargin = 60;
+    public static double movVel = 15, intakeVel = 15, closeVelocity = 710, servoPower = 1;
+    public static double spinUpTime = 2000, WAIT_BEFORE_LAUNCH_MS = 500;
+    public static int launchingDuration = 6000;
+    public static double lErrorMargin = 80;
     public static double gateSPower = 0.2;
 
     // RED baseline coords
-    public static double startX = 0, startY = 0, startHeading = 0;
-    public static double shootingX = -29, shootingY = 31, shootingHeading = -50;
-    public static double intakeX = -41, intakeBY = 36, intakeEY = -3, intakeHeading = 90;
-    public static double finalX = -56, finalY = 31, finalHeading = -90;
+//    public static double startX = 0, startY = 0, startHeading = 0;
+//    public static double shootingX = -29, shootingY = 31, shootingHeading = -50;
+//    public static double intakeX = -41, intakeBY = 36, intakeEY = -3, intakeHeading = 90;
+//    public static double finalX = -56, finalY = 31, finalHeading = -90;
+    public static double startX = 120, startY = 22, startHeading = 0;
+    public static double shootingX = 91, shootingY = 53, shootingHeading = -45;
+    public static double intakeX = 79, intakeBY = 58, intakeEY = 19, intakeHeading = 90;
+    public static double finalX = 60, finalY = 53, finalHeading = 0;
 
     private Path launchFirst3, intakeBPath, intakeEPath, launchSecond3, goPark;
 
@@ -57,10 +58,8 @@ public class PreloadInShoot extends OpMode {
     public void init_loop() {
         if (gamepad1.a) {
             robot.alliance = RobotHardware.Alliance.RED;
-            allianceSelected = true;
         } else if (gamepad1.b) {
             robot.alliance = RobotHardware.Alliance.BLUE;
-            allianceSelected = true;
         }
 
         telemetry.addLine("Press A for RED, B for BLUE");
@@ -108,16 +107,23 @@ public class PreloadInShoot extends OpMode {
 
             case SPINUP:
                 runLaunchers();
-                runServosAt(-0.5);
-                robot.thirdUpS.setPower(-0.01);
+                if (amountOfLaunch != 0&& !timeElapsed(1200)) {
+                    robot.secondUpS.setPower(-0.5);
+                    robot.firstUpS.setPower(-0.1);
+                    //robot.thirdUpS.setPower(0.05);
+
+                }
+
                 if (timeElapsed(spinUpTime)) nextState(State.FIRE);
                 break;
 
             case FIRE:
-                if (Math.abs(closeVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(closeVelocity-robot.launcherL.getVelocity())<=lErrorMargin) {
-                    robot.thirdUpS.setPower(gateSPower);
-                    runServos();
-                } else robot.thirdUpS.setPower(0);
+//                if (timeElapsed(800)) {
+//                    robot.thirdUpS.setPower(gateSPower);
+//                    runServos();
+//                }
+                robot.thirdUpS.setPower(gateSPower);
+                runServos();
                 if (timeElapsed(launchingDuration)) {
                     amountOfLaunch++;
                     stopLaunching();
@@ -143,12 +149,13 @@ public class PreloadInShoot extends OpMode {
             case INTAKE:
                 if (pathDone()) {
                     follower.followPath(launchSecond3);
+                    runLaunchersAt(-0.3);
                     nextState(State.FOLLOW_PATH);
                 }
                 break;
 
             case PARK:
-                if (pathDone()) nextState(State.DONE);
+                if (pathDone() && timeElapsed(4000)) nextState(State.DONE);
 
                 break;
 
@@ -171,17 +178,21 @@ public class PreloadInShoot extends OpMode {
 
     private void flipForAlliance() {
         if (robot.alliance == RobotHardware.Alliance.BLUE) {
-            startY = -startY;
-            shootingY = -shootingY;
-            intakeBY = -intakeBY;
-            intakeEY = -intakeEY;
-            finalY = -finalY;
+
+            startY = 144 - startY;
+            shootingY = 144 - shootingY;
+            intakeBY = 144 - intakeBY;
+            intakeEY = 144 - intakeEY;
+            finalY = 144 - finalY;
+
+            // For headings, if flipping vertically, invert heading
             startHeading = -startHeading;
             shootingHeading = -shootingHeading;
             intakeHeading = -intakeHeading;
             finalHeading = -finalHeading;
         }
     }
+
 
     private boolean pathDone() {
         return !follower.isBusy();
@@ -223,6 +234,6 @@ public class PreloadInShoot extends OpMode {
         //robot.thirdUpS.setPower(power);
         robot.secondUpS.setPower(power);
         robot.firstUpS.setPower(power);
-        robot.intakeS.setPower(power/10);
+        robot.intakeS.setPower(power);
     }
 }

@@ -27,11 +27,12 @@ public class GregConstants {
             .useSecondaryHeadingPIDF(false)
             .useSecondaryDrivePIDF(false)
             .centripetalScaling(0.0005)
-            //I = friction
+            //F = friction
             //P = how agressive it returns
             //D = reduces osolations
             .translationalPIDFCoefficients(new PIDFCoefficients(0.08, 0, 0.01, 0.02))
-            .headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.1, 0))
+            //.headingPIDFCoefficients(new PIDFCoefficients(2, 0, 0.1, 0))
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0.02, 0.025))
             .drivePIDFCoefficients(
                     new FilteredPIDFCoefficients(0.09, 0, 0.00001, 0.6, 0)
             );

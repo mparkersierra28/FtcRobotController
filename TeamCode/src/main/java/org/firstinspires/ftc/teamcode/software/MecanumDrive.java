@@ -5,6 +5,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
@@ -32,7 +33,9 @@ public class MecanumDrive {
 
     // Allows teleop to adjust drive mode or speed multiplier
     public void setFieldCentric(boolean fieldCentric) {
-        headingOffset = (robot.alliance == RobotHardware.Alliance.RED ? -Math.PI/2 : Math.PI/2);
+        headingOffset = (robot.alliance == RobotHardware.Alliance.RED ? Math.PI/2 : -Math.PI/2);
+        //robot.odo.setPosition(new Pose2D(DistanceUnit.INCH, (robot.alliance == RobotHardware.Alliance.RED ? )));
+
         this.fieldCentric = fieldCentric;
     }
 
