@@ -70,9 +70,9 @@ public class GiveItANamePrototype extends OpMode {
 
         physics = new Physics(robot);
 
-        sorter = new Sorter(robot, magazinePos);
-
         magazinePos = new MagazinePositionController(robot);
+
+        sorter = new Sorter(robot, magazinePos);
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -90,7 +90,7 @@ public class GiveItANamePrototype extends OpMode {
 
         // Toggle alliance (red/blue)
         if (gamepad1.b && !bMenuPressed1) {
-            robot.alliance = (robot.alliance == RobotHardware.Alliance.RED)
+            robot.alliance = (robot.isRedAlliance())
                     ? RobotHardware.Alliance.BLUE
                     : RobotHardware.Alliance.RED;
             bMenuPressed1 = true;
@@ -109,7 +109,7 @@ public class GiveItANamePrototype extends OpMode {
         telemetry.addData("Menu: Field Centric Mode", fieldCentric ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
 
-        telemetry.addData("Menu: Alliance", robot.alliance == RobotHardware.Alliance.RED ? "RED" : "BLUE");
+        telemetry.addData("Menu: Alliance", robot.isRedAlliance() ? "RED" : "BLUE");
         telemetry.addLine("Press B to toggle");
 
         telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
@@ -120,23 +120,21 @@ public class GiveItANamePrototype extends OpMode {
     @Override
     public void start() {
         drive.setFieldCentric(fieldCentric);
-
-        telemetry.addData("Field Centric is", fieldCentric ? "ON" : "OFF");
-        telemetry.addData("Alliance is", robot.alliance);
-        telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
-        telemetry.update();
     }
 
     @Override
     public void loop() {
         gamePad1Controls();
 
+        telemetry.addData("Field Centric is", fieldCentric ? "ON" : "OFF");
+        telemetry.addData("Alliance is", robot.alliance);
+        telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
         telemetryM.addData("Intake", sorter.getIntake());
         telemetryM.addData("Waiting", sorter.getWaiting());
         telemetryM.addData("Exit", sorter.getExit());
-        telemetryM.debug(runningIntake);
-        telemetryM.debug(robot.intakeSensor.red()+" "+robot.intakeSensor.green()+" "+robot.intakeSensor.blue());
-        telemetryM.debug("Toggle", aToggleState);
+        telemetryM.debug("Intake Running", runningIntake);
+        telemetryM.debug("RGB ", robot.intakeSensor.red()+" "+robot.intakeSensor.green()+" "+robot.intakeSensor.blue());
+        telemetryM.debug("A State (0 is nothing, 1 is warming up launcher, 2 is launching)", aToggleState);
         telemetryM.update(telemetry);
     }
     private void gamePad1Controls() {
