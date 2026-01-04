@@ -197,8 +197,11 @@ public class GiveItANamePrototype extends OpMode {
         robot.intakeServo.setPower(intakePow);
 
         if (magazinePos.isBusy()) return;
+        telemetryM.debug("Stuck cause ");
         if (!sorter.detectIntake()) return;
+        telemetryM.debug("Updating spot");
         sorter.moveEmptyToIntake(magPower);
+        telemetryM.debug("Moving ball");
 
     }
     private void stopIntake() {
