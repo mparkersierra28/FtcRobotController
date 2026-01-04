@@ -104,10 +104,13 @@ public class Sorter {
         int b = sensor.blue();
 
         // Very simple thresholds – tune these in telemetry
-        if (r < 40 && g < 40 && b < 40) return Obj.EMPTY;
-
-        if (b > 120 && r > 80 && g < 70) return Obj.PURPLE;
         if (g > r && g > b && g > 90)   return Obj.GREEN;
+        //37, 120, 102
+        if (b > 100 && r > 30) return Obj.PURPLE;
+        //60, 88, 133
+
+//        if (r < 40 && g < 40 && b < 40) return Obj.EMPTY;
+        //23, 46, 38
 
         return Obj.EMPTY;
     }
@@ -130,30 +133,24 @@ public class Sorter {
         return true;
     }
 
-    /**
-     * Update slot 2 (EXIT) from exit sensor reading.
-     */
-    public void updateExitFromSensor() {
-        slots[2] = detectColor(robot.exitSensor);
-    }
 
-    /**
-     * Updates EXIT slot from the exit sensor and verifies it is empty.
-     * Also advances the pattern
-     * @return true if the exit is empty, false if there is a ball
-     */
-    public boolean checkAndClearExit() {
-        Obj sensed = detectColor(robot.exitSensor);
-        slots[2] = sensed;
-
-        // If sensed is a ball, exit is NOT empty
-        if (sensed == Obj.GREEN || sensed == Obj.PURPLE) {
-            return false;
-        }
-        advancePattern();
-        // Otherwise it's empty (slot already set to sensed)
-        return true;
-    }
+//    /**
+//     * Updates EXIT slot from the exit sensor and verifies it is empty.
+//     * Also advances the pattern
+//     * @return true if the exit is empty, false if there is a ball
+//     */
+//    public boolean checkAndClearExit() {
+//        Obj sensed = detectColor(robot.exitSensor);
+//        slots[2] = sensed;
+//
+//        // If sensed is a ball, exit is NOT empty
+//        if (sensed == Obj.GREEN || sensed == Obj.PURPLE) {
+//            return false;
+//        }
+//        advancePattern();
+//        // Otherwise it's empty (slot already set to sensed)
+//        return true;
+//    }
 
     /**
      * Rotates the slots (and magazine) so that an EMPTY slot
@@ -170,16 +167,17 @@ public class Sorter {
             }
         }
 
-        if (emptyIndex == -1) return false; // no empty slots
+        if (emptyIndex == -1) return false;
 
-        switch (emptyIndex) {
-            case 0: break; // already at intake
-            case 1: rotateForward(motorPower); break;
-            case 2: rotateBackward(motorPower); break;
+        int steps = forwardSteps(emptyIndex, 0);
+
+        for (int i = 0; i < steps; i++) {
+            rotateForward(motorPower);
         }
 
         return true;
     }
+
 
     /**
      * Rotates the sorter so that the object matching the next pattern step
@@ -193,7 +191,6 @@ public class Sorter {
     public boolean moveNextPatternToExit(double motorPower) {
         Obj target = getExpectedColor();
 
-        // Check if target color is present in any slot
         int targetIndex = -1;
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] == target) {
@@ -202,7 +199,6 @@ public class Sorter {
             }
         }
 
-        // If target not found, fall back to any colored object
         if (targetIndex == -1) {
             for (int i = 0; i < slots.length; i++) {
                 if (slots[i] != Obj.EMPTY) {
@@ -212,18 +208,27 @@ public class Sorter {
             }
         }
 
-        // If still -1 → all empty, return false
         if (targetIndex == -1) return false;
 
-        // Calculate shortest path to move target to EXIT (slot 2)
-        switch (targetIndex) {
-            case 0: rotateForward(motorPower); break;
-            case 1: rotateBackward(motorPower); break;
-            case 2: break; // already at exit
+        int steps = forwardSteps(targetIndex, 2);
+
+        for (int i = 0; i < steps; i++) {
+            rotateForward(motorPower);
         }
 
         return true;
     }
+
+    private int forwardSteps(int from, int to) {
+        return (to - from + 3) % 3;
+    }
+
+    public void shootBall(double motorPower) {
+        slots[2] = Obj.EMPTY;
+        rotateBackward(motorPower);
+        advancePattern();
+    }
+
 
 
     // ---------------- GETTERS ----------------

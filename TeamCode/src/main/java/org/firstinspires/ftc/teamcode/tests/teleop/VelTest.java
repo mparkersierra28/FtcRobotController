@@ -19,7 +19,9 @@ public class VelTest extends OpMode {
     private boolean lRunning = false;
     private boolean bPressed = false;
     private boolean sRunning = false;
+    private boolean yPressed = false;
     private double targetVel;
+    private boolean drag = false;
 
     public static int goalXPos = 140, goalYPos = 4;
     @Override
@@ -34,26 +36,45 @@ public class VelTest extends OpMode {
 
     @Override
     public void loop() {
+        if (!yPressed && gamepad1.y) {
+            drag = !drag;
+        }
         if (!aPressed && gamepad1.a) {
             lRunning = !lRunning;
             if (lRunning) {
-                robot.odo.update();
-                targetVel = physics.getVelocityTpS(physics.getDistanceToPoint(goalXPos, goalYPos));
+                if (drag) {
+                    robot.odo.update();
+                    targetVel = physics.getVelocityRTpS(goalXPos, goalYPos);
+                } else {
+                    targetVel = physics.getVelocityTpS(goalXPos, goalYPos);
+                }
             }
         }
         aPressed = gamepad1.a;
         if (lRunning) {
             drive.turnInDirection(physics.getHeadingError(goalXPos, goalYPos));
-            robot.launcherR.setVelocity(targetVel);
-            robot.launcherL.setVelocity(targetVel);
+            if (!drag) {
+                robot.launcherR.setVelocity(targetVel, AngleUnit.RADIANS);
+                robot.launcherL.setVelocity(targetVel, AngleUnit.RADIANS);
+            } else {
+                robot.launcherR.setVelocity(targetVel);
+                robot.launcherL.setVelocity(targetVel);
+            }
+
             if (Math.abs(targetVel-robot.launcherR.getVelocity())<=80&&Math.abs(targetVel-robot.launcherL.getVelocity())<=80) {
                 robot.thirdUpS.setPower(0.2);
             }
         } else {
-                robot.launcherR.setVelocity(0);
-                robot.launcherL.setVelocity(0);
-                robot.thirdUpS.setPower(0);
-            }
+            robot.launcherR.setPower(0);
+            robot.launcherL.setPower(0);
+            robot.thirdUpS.setPower(0);
+            drive.update(
+                    gamepad1.left_stick_x,
+                    gamepad1.left_stick_y,
+                    gamepad1.right_stick_x,
+                    gamepad1.right_stick_y
+            );
+        }
         if (!bPressed && gamepad1.b) {
             sRunning = !sRunning;
         }
@@ -67,8 +88,13 @@ public class VelTest extends OpMode {
             robot.firstUpS.setPower(0);
             robot.intakeS.setPower(0);
         }
+        yPressed = gamepad1.y;
 
         telemetry.addData("Vel", targetVel);
+        telemetry.addData("Real Vel", robot.launcherR.getVelocity());
+        telemetry.addData("Real Radian Vel", robot.launcherR.getVelocity(AngleUnit.RADIANS));
+        telemetry.addData("Dis", physics.getDistanceToPoint(goalXPos, goalYPos));
+        telemetry.addData("Wind drag", drag);
 
     }
 }

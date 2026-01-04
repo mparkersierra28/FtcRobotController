@@ -28,7 +28,7 @@ public class GiveItANameConfig {
         robot.rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         robot.rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        robot.magazine = hw.get(DcMotor.class, "magazine");
+        robot.indexer = hw.get(DcMotor.class, "indexer");
 
         robot.launcher = hw.get(DcMotorEx.class, "launcher");
 
@@ -42,14 +42,11 @@ public class GiveItANameConfig {
         );
         robot.odo.setOffsets(7.5, 2, DistanceUnit.INCH);
 
-        robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
+        //robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
 
         robot.intakeSensor = hw.get(RevColorSensorV3.class, "intakeSensor");
-        robot.exitSensor = hw.get(RevColorSensorV3.class, "exitSensor");
+        //robot.exitSensor = hw.get(RevColorSensorV3.class, "exitSensor");
 
-        robot.gateS = hw.get(Servo.class, "gateS");
-        robot.intakeLS = hw.get(DcMotorEx.class, "intakeLS");
-        robot.intakeRS = hw.get(DcMotorEx.class, "intakeRS");
-        robot.intakeRS.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.intakeServo = hw.get(CRServo.class, "intake");
     }
 }

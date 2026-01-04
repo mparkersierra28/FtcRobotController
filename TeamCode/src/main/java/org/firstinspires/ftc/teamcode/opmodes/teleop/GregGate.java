@@ -7,33 +7,30 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
+import org.firstinspires.ftc.teamcode.software.Physics;
+
 @Configurable
-@TeleOp(name="Definite Greg", group = "1")
-public class GregLauncherFinalOneRemote extends OpMode {
+@TeleOp(name="Gate Greg", group = "1")
+public class GregGate extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
     private CameraQR camera;
+    private Physics physics;
 
     public TelemetryManager telemetryM;
 
     // Launching Degree Position
-    public static double redRotationClose = -40;
-    public static double redRotationFar = -60;
-
-    public static double blueRotationClose = 40;
-    public static double blueRotationFar = 60;
-
-    // Launcher Velocities
-    public static int launchSmallVel = 750;
-    public static int launchBigVel = 950;
 
     public static double launchPower = 1.0;
     public static double servoPower = 1.0;
+    public static double gateSPower = 0.2;
 
-    private boolean fieldCentric;
+    private boolean fieldCentric = true;
     private boolean twoPlayers = false;
     private boolean aMenuPressed1;
     private boolean bMenuPressed1;
@@ -62,7 +59,16 @@ public class GregLauncherFinalOneRemote extends OpMode {
     private boolean allServosMode = false;
     private boolean allServosAndLaunchMode = false;
 
-    boolean somethingRunning = false;
+    private boolean somethingRunning = false;
+
+    public static int lErrorMargin = 40;
+
+    public static int goalXPos = 140, goalYPos = 4;
+
+    private double humanStartTime;
+    public static int launchBigVel = 920;
+    public static int launchSmallVel = 750;
+    public static int launchReallyClose = 680;
 
     @Override
     public void init() {
@@ -74,6 +80,8 @@ public class GregLauncherFinalOneRemote extends OpMode {
         drive = new MecanumDrive(robot);
 
         camera = new CameraQR(robot);
+
+        physics = new Physics(robot);
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -91,7 +99,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
 
         // Toggle alliance (red/blue)
         if (gamepad1.b && !bMenuPressed1) {
-            robot.alliance = (robot.alliance == RobotHardware.Alliance.RED)
+            robot.alliance = (robot.isRedAlliance())
                     ? RobotHardware.Alliance.BLUE
                     : RobotHardware.Alliance.RED;
             bMenuPressed1 = true;
@@ -100,21 +108,21 @@ public class GregLauncherFinalOneRemote extends OpMode {
         }
 
         // Toggle two player mode
-        if (gamepad2.a && !aMenuPressed2) {
-            twoPlayers = !twoPlayers;
-            aMenuPressed2 = true;
-        } else if (!gamepad2.a) {
-            aMenuPressed2 = false;
-        }
+//        if (gamepad2.a && !aMenuPressed2) {
+//            twoPlayers = !twoPlayers;
+//            aMenuPressed2 = true;
+//        } else if (!gamepad2.a) {
+//            aMenuPressed2 = false;
+//        }
 
         telemetry.addData("Menu: Field Centric Mode", fieldCentric ? "ON" : "OFF");
         telemetry.addLine("Press A to toggle");
 
-        telemetry.addData("Menu: Alliance", robot.alliance == RobotHardware.Alliance.RED ? "RED" : "BLUE");
+        telemetry.addData("Menu: Alliance", robot.isRedAlliance() ? "RED" : "BLUE");
         telemetry.addLine("Press B to toggle");
 
-        telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
-        telemetry.addLine("Gamepad2: Press A to toggle");
+//        telemetry.addData("Menu: Two Player Mode", twoPlayers ? "YES" : "NO");
+//        telemetry.addLine("Gamepad2: Press A to toggle");
         telemetry.update();
     }
 
@@ -122,10 +130,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
     public void start() {
         drive.setFieldCentric(fieldCentric);
 
-
-        telemetry.addData("Field Centric is", fieldCentric ? "ON" : "OFF");
-        telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
-        telemetry.update();
+        if (!robot.isRedAlliance()) goalYPos = goalXPos;
     }
     @Override
     public void loop() {
@@ -133,7 +138,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
         somethingRunning = false;
         gamePad1Controls();
 
-        if (twoPlayers) gamepad2Controls();
+        //if (twoPlayers) gamepad2Controls();
 
         telemetryM.update(telemetry);
     }
@@ -146,8 +151,11 @@ public class GregLauncherFinalOneRemote extends OpMode {
         // --- Rotate to clip angle ---
         if (gamepad1.y) {
             //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);
-            drive.turnInDirection(camera.getQRDir());
-            telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
+            drive.turnInDirection(physics.getHeadingError(goalXPos, goalYPos));
+//            telemetryM.debug(Math.toDegrees(physics.getHeadingError(144, 0)));
+//            telemetryM.debug(Math.toDegrees(physics.getAngleToPoint(144, 0)));
+//            telemetryM.debug("Current Angle: ", robot.odo.getHeading(AngleUnit.DEGREES));
+//            telemetryM.debug(robot.odo.getPosX(DistanceUnit.INCH), robot.odo.getPosY(DistanceUnit.INCH));
         } else {
             drive.update(
                     gamepad1.left_stick_x,
@@ -156,7 +164,6 @@ public class GregLauncherFinalOneRemote extends OpMode {
                     gamepad1.right_stick_y
             );
         }
-
         // --- Emergency Stop ---
         if (gamepad1.left_bumper) {
             launcherRunning1 = false;
@@ -167,8 +174,8 @@ public class GregLauncherFinalOneRemote extends OpMode {
         }
 
         // --- Reset Odo Dir ---
-        if (gamepad1.dpad_up) {
-            robot.odo.resetPosAndIMU();
+        if (gamepad1.right_bumper) {
+            robot.odo.setPosition(new Pose2D(DistanceUnit.INCH, 10, 72, AngleUnit.RADIANS, 0));
         }
 
         // --- A Toggle (Launcher) ---
@@ -176,14 +183,15 @@ public class GregLauncherFinalOneRemote extends OpMode {
             // If feeder is running, stop it (simulate sleep)
             if (feederRunning1) {
                 feederRunning1 = false;
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                stopIntake();
             }
 
             launcherRunning1 = !launcherRunning1;
-            if (!launcherRunning1) {
+            if (launcherRunning1) {
+//                targetVelocity = physics.getVelocityTpS(goalXPos, goalYPos);
+//                // velocity (m/s)/circumference(0.096 * PI)
+//                targetVelocity = targetVelocity/(0.096 * Math.PI);
+            } else {
                 stopAllLaunching();
             }
         }
@@ -193,10 +201,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
         if (gamepad1.b && !prevB1) {
             feederRunning1 = !feederRunning1;
             if (!feederRunning1) {
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                stopIntake();
             }
         }
         prevB1 = gamepad1.b;
@@ -207,29 +212,26 @@ public class GregLauncherFinalOneRemote extends OpMode {
             humanRunning1 = !humanRunning1;
 
             if (humanRunning1) {
+                humanStartTime = System.currentTimeMillis();
                 // Turn off launcher + feeder for safety
                 launcherRunning1 = false;
                 feederRunning1 = false;
                 stopAllLaunching();
             } else {
-                // Human turned off: stop only human motors
-                robot.launcherR.setPower(0.0);
-                robot.launcherL.setPower(0.0);
-                robot.thirdUpS.setPower(0.0);
-                robot.secondUpS.setPower(0.0);
-                robot.firstUpS.setPower(0.0);
-                robot.intakeS.setPower(0.0);
+                // Human turned off: stop all motors
+                stopAllLaunching();
             }
         }
         prevX1 = gamepad1.x;
+        double targetVelocity = gamepad1.dpad_down ? launchBigVel : (gamepad1.dpad_up ? launchReallyClose : launchSmallVel);
 
-        double targetVelocity = gamepad1.dpad_down ? launchBigVel : launchSmallVel;
         // --- Launcher Running ---
         if (launcherRunning1) {
             somethingRunning = true;
-            if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=40&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=40){
-                gamepad1.rumble(500);
-            }
+            if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=lErrorMargin){
+                robot.thirdUpS.setPower(gateSPower);
+                gamepad1.rumble(0.6, 0.6, 40);
+            } else robot.thirdUpS.setPower(0);
 
 
             robot.launcherR.setVelocity(targetVelocity);
@@ -239,7 +241,7 @@ public class GregLauncherFinalOneRemote extends OpMode {
         // --- Feeder Running ---
         if (feederRunning1) {
             somethingRunning = true;
-            robot.thirdUpS.setPower(adjustedServoPower);
+
             robot.secondUpS.setPower(adjustedServoPower);
             robot.firstUpS.setPower(adjustedServoPower);
             robot.intakeS.setPower(adjustedServoPower);
@@ -248,12 +250,15 @@ public class GregLauncherFinalOneRemote extends OpMode {
         // --- Human Running (Toggle Mode) ---
         if (humanRunning1) {
             somethingRunning = true;
-            robot.launcherR.setPower(-0.2);
-            robot.launcherL.setPower(-0.2);
-            robot.thirdUpS.setPower(-adjustedServoPower / 4);
+
+            if (humanStartTime < System.currentTimeMillis() - 500) robot.thirdUpS.setPower(0.1);
+            else robot.thirdUpS.setPower(-0.1);
+
+            robot.launcherR.setPower(-launchPower/5);
+            robot.launcherL.setPower(-launchPower/5);
             robot.secondUpS.setPower(-adjustedServoPower / 4);
-            robot.firstUpS.setPower(-adjustedServoPower / 4);
-            robot.intakeS.setPower(-adjustedServoPower / 8);
+            robot.firstUpS.setPower(-adjustedServoPower / 5);
+            robot.intakeS.setPower(0.01);
         }
         telemetryM.addData("Velocity", robot.launcherR.getVelocity());
         telemetryM.addData("Error", robot.launcherR.getVelocity()-targetVelocity);
@@ -262,6 +267,28 @@ public class GregLauncherFinalOneRemote extends OpMode {
 
 
 
+
+    private void resetModes() {
+        launchMode = false;
+        middleMode = false;
+        intakeMode = false;
+        allServosMode = false;
+        allServosAndLaunchMode = false;
+        stopAllLaunching();
+    }
+    private void stopIntake() {
+        robot.secondUpS.setPower(0.0);
+        robot.firstUpS.setPower(0.0);
+        robot.intakeS.setPower(0.0);
+    }
+    private void stopAllLaunching() {
+        robot.launcherR.setPower(0.0);
+        robot.launcherL.setPower(0.0);
+        robot.thirdUpS.setPower(0.0);
+        robot.secondUpS.setPower(0.0);
+        robot.firstUpS.setPower(0.0);
+        robot.intakeS.setPower(0.0);
+    }
     private void gamepad2Controls() {
         double triggerValue = gamepad2.right_trigger;
         double speed = 1.0 - (0.9 * triggerValue);
@@ -362,22 +389,6 @@ public class GregLauncherFinalOneRemote extends OpMode {
         }
 
         if (!somethingRunning) stopAllLaunching();
-    }
-    private void resetModes() {
-        launchMode = false;
-        middleMode = false;
-        intakeMode = false;
-        allServosMode = false;
-        allServosAndLaunchMode = false;
-        stopAllLaunching();
-    }
-    private void stopAllLaunching() {
-        robot.launcherR.setPower(0.0);
-        robot.launcherL.setPower(0.0);
-        robot.thirdUpS.setPower(0.0);
-        robot.secondUpS.setPower(0.0);
-        robot.firstUpS.setPower(0.0);
-        robot.intakeS.setPower(0.0);
     }
 }
 

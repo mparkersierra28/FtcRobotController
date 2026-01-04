@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -53,7 +54,8 @@ public class GregConfig {
         robot.intakeS = hw.get(CRServo.class, "intakeS");
         robot.firstUpS = hw.get(CRServo.class, "firstUpS");
         robot.secondUpS = hw.get(CRServo.class, "secondUpS");
-        robot.thirdUpS = hw.get(CRServo.class, "thirdUpS");
+        //robot.thirdUpS = hw.get(CRServo.class, "thirdUpS");
+        robot.gatePush = hw.get(Servo.class, "thirdUpS");
 
         robot.firstUpS.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.secondUpS.setDirection(DcMotorSimple.Direction.REVERSE);

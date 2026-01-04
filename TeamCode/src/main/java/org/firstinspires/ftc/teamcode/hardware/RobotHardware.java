@@ -50,13 +50,14 @@ public class RobotHardware {
     // Greg
     public DcMotorEx launcherR, launcherL;
     public CRServo intakeS, firstUpS, secondUpS, thirdUpS;
+    public Servo gatePush;
 
     // GIAN
-    public DcMotor magazine;
+    public DcMotor indexer;
     public DcMotorEx launcher;
-    public RevColorSensorV3 intakeSensor, exitSensor;
-    public Servo gateS;
-    public DcMotorEx intakeRS, intakeLS;
+    public RevColorSensorV3 intakeSensor;
+    //public Servo gateS;
+    public CRServo intakeServo;
 
     // Sensors
     public GoBildaPinpointDriver odo;
@@ -142,5 +143,7 @@ public class RobotHardware {
         if (rawA == 1) return Alliance.BLUE;
         return Alliance.EMPTY;
     }
-
+    public boolean isRedAlliance() {
+        return alliance.ordinal() == RobotHardware.Alliance.RED.ordinal();
+    }
 }

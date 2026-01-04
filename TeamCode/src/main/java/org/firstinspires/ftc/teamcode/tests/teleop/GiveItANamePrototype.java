@@ -20,7 +20,7 @@ public class GiveItANamePrototype extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
     private Physics physics;
-    private CameraQR camera;
+    //private CameraQR camera;
     private Sorter sorter;
     private MagazinePositionController magazinePos;
 
@@ -39,7 +39,7 @@ public class GiveItANamePrototype extends OpMode {
     // Toggles
     private boolean bPressed = false;
     private boolean aPressed = false;
-    private int aToggleState = 1;
+    private int aToggleState = 0;
 
     // Intake
     private boolean runningIntake = false;
@@ -55,6 +55,8 @@ public class GiveItANamePrototype extends OpMode {
 
     public static double intakePow = 0.2;
 
+    public static double shootMagPow = 0.1;
+
     @Override
     public void init() {
         // Initialize robot hardware
@@ -64,7 +66,7 @@ public class GiveItANamePrototype extends OpMode {
         // Get the driving class
         drive = new MecanumDrive(robot);
 
-        camera = new CameraQR(robot);
+        //camera = new CameraQR(robot);
 
         physics = new Physics(robot);
 
@@ -129,6 +131,12 @@ public class GiveItANamePrototype extends OpMode {
     public void loop() {
         gamePad1Controls();
 
+        telemetryM.addData("Intake", sorter.getIntake());
+        telemetryM.addData("Waiting", sorter.getWaiting());
+        telemetryM.addData("Exit", sorter.getExit());
+        telemetryM.debug(runningIntake);
+        telemetryM.debug(robot.intakeSensor.red()+" "+robot.intakeSensor.green()+" "+robot.intakeSensor.blue());
+        telemetryM.debug("Toggle", aToggleState);
         telemetryM.update(telemetry);
     }
     private void gamePad1Controls() {
@@ -169,6 +177,7 @@ public class GiveItANamePrototype extends OpMode {
         // Run actions based on state
         switch (aToggleState) {
             case 0:
+                break;
             case 1:
                 if (!warmUpTriggered) {
                     warmUpLauncher();   // runs only once
@@ -187,8 +196,7 @@ public class GiveItANamePrototype extends OpMode {
     }
 
     private void intake() {
-        robot.intakeLS.setPower(intakePow);
-        robot.intakeRS.setPower(intakePow);
+        robot.intakeServo.setPower(intakePow);
 
         if (magazinePos.isBusy()) return;
         if (!sorter.detectIntake()) return;
@@ -199,8 +207,7 @@ public class GiveItANamePrototype extends OpMode {
 
     }
     private void stopIntake() {
-        robot.intakeLS.setPower(0);
-        robot.intakeRS.setPower(0);
+        robot.intakeServo.setPower(0);
     }
     // This runs for a few seconds after stopIntake
     private void continueIntakeAfterStop() {
@@ -218,17 +225,10 @@ public class GiveItANamePrototype extends OpMode {
     }
     private void shootBall() {
         if (magazinePos.isBusy()) return;
-
-        robot.gateS.setPosition(gateOpen);
-
-        if (sorter.checkAndClearExit()) {
-            robot.gateS.setPosition(gateClosed);
-            warmUpLauncher();
-        }
+        sorter.shootBall(shootMagPow);
 
     }
     private void stopAllLaunching() {
-        robot.gateS.setPosition(gateClosed);
         robot.launcher.setPower(0);
 
         warmUpTriggered = false;

@@ -13,9 +13,9 @@ public class MagazinePositionController {
     public MagazinePositionController(RobotHardware robot) {
         this.robot = robot;
         this.currentIndex = 0; // start at position 1 by default
-        robot.magazine.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.magazine.setTargetPosition(positions[currentIndex]);
-        robot.magazine.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.indexer.setTargetPosition(positions[currentIndex]);
+        robot.indexer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     // Move forward in positions (1->2->3->1)
@@ -32,15 +32,15 @@ public class MagazinePositionController {
 
     // Internal helper function
     private void moveToIndex(int index, double power) {
-        robot.magazine.setTargetPosition(positions[index]);
-        robot.magazine.setPower(power);
+        robot.indexer.setTargetPosition(positions[index]);
+        robot.indexer.setPower(power);
         currentIndex = index;
     }
 
     // Optional: check if motor has reached its target
     public boolean isBusy() {
-        boolean busy = robot.magazine.isBusy();
-        if (!busy) robot.magazine.setPower(0);
+        boolean busy = robot.indexer.isBusy();
+        if (!busy) robot.indexer.setPower(0);
         return busy;
     }
 

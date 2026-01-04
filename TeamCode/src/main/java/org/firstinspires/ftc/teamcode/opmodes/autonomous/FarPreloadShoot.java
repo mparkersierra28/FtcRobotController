@@ -72,7 +72,7 @@ public class FarPreloadShoot extends OpMode {
 
         @Override
         public void start() {
-            TransferData.saveAlliance(hardwareMap, (robot.alliance == RobotHardware.Alliance.RED ? 0 : 1));
+            TransferData.saveAlliance(hardwareMap, (robot.isRedAlliance() ? 0 : 1));
 
             flipForAlliance();
 
@@ -180,7 +180,7 @@ public class FarPreloadShoot extends OpMode {
         }
 
         private void flipForAlliance() {
-            if (robot.alliance == RobotHardware.Alliance.BLUE) {
+            if (!robot.isRedAlliance()) {
 
                 startY = 144 - startY;
                 shootingY = 144 - shootingY;

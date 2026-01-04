@@ -9,19 +9,20 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
 public class Physics {
     private RobotHardware robot;
-    private CameraQR camera;
+    //private CameraQR camera;
 
     public static double lAngle = Math.toRadians(50);
-    public static double targetHeight = 50;
+    public static double targetHeight = 70;
     public static double targety = 110;
     public static double dragconst = 0.00109;
     // Gravity in cm/s^2
     private final double g = 980.665; // approximate gravity in cm/s^2
+    private double radius = 4.8;
 
-    public static double k = 1.25;
+    public static double k = 1.5;
     public Physics(RobotHardware robot) {
         this.robot = robot;
-        this.camera = new CameraQR(robot);
+        //this.camera = new CameraQR(robot);
     }
 
     /**
@@ -29,7 +30,7 @@ public class Physics {
      * @return velocity in cm/s
      */
     public double getVelocityTpS(double targetX, double targetY) {
-        // It is in Inches
+        // It is in CM
         robot.odo.update();
         // Get horizontal distance to QR
         double x = getDistanceToPoint(targetX, targetY);
@@ -43,10 +44,9 @@ public class Physics {
 
         double u = x * Math.sqrt(g / (2 * Math.pow(Math.cos(lAngle), 2) * denominator));
 
-        // velocity (cm/s)/circumference(0.096 * PI)
-        u = (u / (0.096)) * 28 * k;
+        double omega = u/radius;
 
-        return u;
+        return (omega/100) * k;
     }
 
     /**
@@ -54,13 +54,18 @@ public class Physics {
      * @param targetX how far away the goal x is
      * @return vel for
      */
-    public double getVelocityTpS(double targetX) {
-        double alphafunction = Math.exp((dragconst*targetX)/Math.cos(lAngle));
+    public double getVelocityRTpS(double targetX, double targetY) {
+        // It is in CM
+        robot.odo.update();
+        // Get horizontal distance to QR
+        double x = getDistanceToPoint(targetX, targetY);
+
+        double alphafunction = Math.exp((dragconst*x)/Math.cos(lAngle));
 
         double launchvelnumerator = g*((alphafunction - 1)*(alphafunction - 1));
         double launchveldenominator = 2*dragconst*dragconst*(30.48 + (Math.sin(lAngle)/dragconst)*Math.log(alphafunction)-1.1);
         if (launchveldenominator <= 0) return -1;
-        return((Math.sqrt(launchvelnumerator/launchveldenominator))/30.159)*28 * k;
+        return((Math.sqrt(launchvelnumerator/launchveldenominator))/4.8)*(14/Math.PI) * k;
     }
     /**
      * Returns the angle (in radians) from the robot's current odometry position
