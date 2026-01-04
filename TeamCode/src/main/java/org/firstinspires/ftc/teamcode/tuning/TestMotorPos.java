@@ -26,5 +26,6 @@ public class TestMotorPos extends OpMode {
     @Override
     public void loop() {
         telemetryM.addData("MotorPos", magazine.getCurrentPosition());
+        telemetryM.update(telemetry);
     }
 }

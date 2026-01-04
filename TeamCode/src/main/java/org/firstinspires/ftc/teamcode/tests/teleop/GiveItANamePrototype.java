@@ -198,10 +198,7 @@ public class GiveItANamePrototype extends OpMode {
 
         if (magazinePos.isBusy()) return;
         if (!sorter.detectIntake()) return;
-        if (!sorter.moveEmptyToIntake(magPower)) {
-            runningIntake = false;
-            stopIntake();
-        }
+        sorter.moveEmptyToIntake(magPower);
 
     }
     private void stopIntake() {

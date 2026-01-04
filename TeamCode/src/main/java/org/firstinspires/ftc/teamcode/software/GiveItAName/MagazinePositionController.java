@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
 public class MagazinePositionController {
     private RobotHardware robot;
-    private static int[] positions = {1, 2, 3}; // encoder ticks for positions 1, 2, 3
+    private static int[] positions = {0, 260, 520}; // encoder ticks for positions 1, 2, 3
     private int currentIndex; // 0 = position 1, 1 = position 2, 2 = position 3
 
     public MagazinePositionController(RobotHardware robot) {
