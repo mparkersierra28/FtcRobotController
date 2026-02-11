@@ -37,7 +37,7 @@ public class TuneServo extends OpMode {
         dPrev = gamepad1.dpad_down;
         telemetryM.addData("Servo Position", servoPos);
         if (gamepad1.a) {
-            robot.gatePush.setPosition(servoPos);
+            robot.gateS.setPosition(servoPos);
         }
         telemetryM.update(telemetry);
     }

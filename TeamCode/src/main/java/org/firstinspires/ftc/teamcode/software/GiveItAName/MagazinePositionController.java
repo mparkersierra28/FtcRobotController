@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 @Configurable
 public class MagazinePositionController {
 
-    private static final int STEP_TICKS = 260;
+    private final int STEP_TICKS = 267;
 
     private RobotHardware robot;
     private int currentIndex = 0; // 0,1,2 for logical position
@@ -16,12 +16,13 @@ public class MagazinePositionController {
         this.robot = robot;
 
         robot.indexer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.indexer.setTargetPosition(0);
         robot.indexer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     // Always move +260 ticks
     public void moveForward(double power) {
-        int currentPos = robot.indexer.getCurrentPosition();
+        int currentPos = robot.indexer.getTargetPosition();
         int target = currentPos + STEP_TICKS;
 
         robot.indexer.setTargetPosition(target);
@@ -32,7 +33,7 @@ public class MagazinePositionController {
 
     // Always move -260 ticks
     public void moveBackward(double power) {
-        int currentPos = robot.indexer.getCurrentPosition();
+        int currentPos = robot.indexer.getTargetPosition();
         int target = currentPos - STEP_TICKS;
 
         robot.indexer.setTargetPosition(target);
@@ -41,9 +42,14 @@ public class MagazinePositionController {
         currentIndex = (currentIndex - 1 + 3) % 3;
     }
 
+    public void reset(double power) {
+        robot.indexer.setTargetPosition(0);
+        robot.indexer.setPower(Math.abs(power));
+    }
+
     public boolean isBusy() {
         boolean busy = robot.indexer.isBusy();
-        if (!busy) robot.indexer.setPower(0);
+        //if (!busy) robot.indexer.setPower(0);
         return busy;
     }
 

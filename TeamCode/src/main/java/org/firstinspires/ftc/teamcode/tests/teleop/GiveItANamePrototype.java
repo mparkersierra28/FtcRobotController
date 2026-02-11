@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.software.GiveItAName.Sorter;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 import org.firstinspires.ftc.teamcode.software.Physics;
 
+
 @Configurable
 @TeleOp (name = "GIAN Prototype", group = "Test")
 public class GiveItANamePrototype extends OpMode {
@@ -26,8 +27,10 @@ public class GiveItANamePrototype extends OpMode {
 
     public TelemetryManager telemetryM;
 
-    public static int lVel = 1000;
-    public static double magPower = 0.5;
+    public static int launchSmallVel = 1430;
+    public static int launchBigVel = 2000;
+    public static int launchReallyClose = 1000;
+    public static double magPower = 0.4;
 
     // Menu
     private boolean fieldCentric;
@@ -48,14 +51,18 @@ public class GiveItANamePrototype extends OpMode {
 
     // Launching
     private boolean warmUpTriggered = false;
-    private static double gateOpen = 0.25;
-    private static double gateClosed = 0;
 
     public static int goalXPos = 140, goalYPos = 4;
 
-    public static double intakePow = 0.2;
+    public static double intakePow = 0.5;
 
-    public static double shootMagPow = 0.1;
+    public static double shootMagPow = 0.3;
+
+    public static double closeGatePos = 0.867;
+    public static double openGatePos = 0.67;
+
+    private boolean processingBalls = false;
+    public static int lErrorMargin = 40;
 
     @Override
     public void init() {
@@ -73,6 +80,7 @@ public class GiveItANamePrototype extends OpMode {
         magazinePos = new MagazinePositionController(robot);
 
         sorter = new Sorter(robot, magazinePos);
+        sorter.reset();
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -120,21 +128,27 @@ public class GiveItANamePrototype extends OpMode {
     @Override
     public void start() {
         drive.setFieldCentric(fieldCentric);
+        robot.gateS.setPosition(openGatePos);
     }
 
     @Override
     public void loop() {
         gamePad1Controls();
+        gamePad2Controls();
 
         telemetry.addData("Field Centric is", fieldCentric ? "ON" : "OFF");
         telemetry.addData("Alliance is", robot.alliance);
-        telemetry.addData("Two Player Mode is ", twoPlayers ? "ON" : "OFF");
         telemetryM.addData("Intake", sorter.getIntake());
         telemetryM.addData("Waiting", sorter.getWaiting());
         telemetryM.addData("Exit", sorter.getExit());
-        telemetryM.debug("Intake Running", runningIntake);
         telemetryM.debug("RGB ", robot.intakeSensor.red()+" "+robot.intakeSensor.green()+" "+robot.intakeSensor.blue());
         telemetryM.debug("A State (0 is nothing, 1 is warming up launcher, 2 is launching)", aToggleState);
+        telemetryM.addData("Mag Pos", robot.indexer.getCurrentPosition());
+        telemetryM.addData("Mag Target Pos", robot.indexer.getTargetPosition());
+        telemetryM.debug("Next Up:\n",
+                sorter.getPatternColor(0), "\n",
+                sorter.getPatternColor(1), "\n",
+                sorter.getPatternColor(2));
         telemetryM.update(telemetry);
     }
     private void gamePad1Controls() {
@@ -154,11 +168,24 @@ public class GiveItANamePrototype extends OpMode {
         if (gamepad1.b && !bPressed) {
             runningIntake = !runningIntake;
             if (!runningIntake) {
+                robot.gateS.setPosition(closeGatePos);
                 stopIntake();
                 stopIntakeStartTime = System.currentTimeMillis(); // mark when stop starts
+            } else {
+                robot.gateS.setPosition(openGatePos);
             }
         }
         bPressed = gamepad1.b;
+
+        // --- Emergency Stop ---
+        if (gamepad1.left_bumper) {
+            aToggleState = 3;
+            stopIntake();
+            stopIntakeStartTime = System.currentTimeMillis();
+            runningIntake = false;
+
+            return;
+        }
 
         if (runningIntake) {
             intake();
@@ -178,15 +205,22 @@ public class GiveItANamePrototype extends OpMode {
                 break;
             case 1:
                 if (!warmUpTriggered) {
-                    warmUpLauncher();   // runs only once
+                    int targetVelocity = gamepad1.dpad_down ? launchBigVel : (gamepad1.dpad_up ? launchReallyClose : launchSmallVel);
+                    warmUpLauncher(targetVelocity);   // runs only once
                     warmUpTriggered = true;
+                    if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=lErrorMargin){
+                        gamepad1.rumble(500);
+                    }
                 }
                 break;
             case 2:
-                shootBall();  // runs continuously while in state 2
+                if (!shootBall()) aToggleState = 3;
                 break;
             case 3:
                 stopAllLaunching();
+                magazinePos.reset(magPower);
+                robot.gateS.setPosition(openGatePos);
+                processingBalls = false;
                 aToggleState = 0;
                 break;
         }
@@ -196,12 +230,16 @@ public class GiveItANamePrototype extends OpMode {
     private void intake() {
         robot.intakeServo.setPower(intakePow);
 
-        if (magazinePos.isBusy()) return;
-        telemetryM.debug("Stuck cause ");
+        telemetryM.addData("Mag", 1);
+        if (magazinePos.isBusy()) {
+            robot.gateS.setPosition(closeGatePos);
+            return;
+        } else robot.gateS.setPosition(openGatePos);
+        telemetryM.addData("Stuck cause color", 1);
         if (!sorter.detectIntake()) return;
-        telemetryM.debug("Updating spot");
+        telemetryM.addData("Updating spot", 1);
         sorter.moveEmptyToIntake(magPower);
-        telemetryM.debug("Moving ball");
+        telemetryM.addData("Moving ball", 1);
 
     }
     private void stopIntake() {
@@ -216,20 +254,41 @@ public class GiveItANamePrototype extends OpMode {
             sorter.moveEmptyToIntake(magPower);
         }
     }
-    private void warmUpLauncher() {
+    private void warmUpLauncher(int lVel) {
         robot.launcher.setVelocity(lVel);
 
-        if (!sorter.moveNextPatternToExit(magPower)) aToggleState = 3;
-    }
-    private void shootBall() {
-        if (magazinePos.isBusy()) return;
-        sorter.shootBall(shootMagPow);
 
+    }
+    private boolean shootBall() {
+        if (magazinePos.isBusy()) return true;
+
+        if (!processingBalls) {
+            sorter.shootBall(shootMagPow);
+            processingBalls = true;
+        } else {
+            processingBalls = false;
+            return sorter.moveNextPatternToExit(magPower);
+        }
+
+        return true;
     }
     private void stopAllLaunching() {
         robot.launcher.setPower(0);
 
         warmUpTriggered = false;
+
+    }
+    private boolean  upPressed = false;
+    private boolean  downPressed = false;
+    private void gamePad2Controls() {
+        if (!upPressed && gamepad2.dpad_up) sorter.advancePattern();
+        upPressed = gamepad2.dpad_up;
+
+        if (!downPressed && gamepad2.dpad_down) {
+            sorter.advancePattern();
+            sorter.advancePattern();
+        }
+        downPressed = gamepad2.dpad_down;
 
     }
 }

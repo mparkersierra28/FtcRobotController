@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 
-@TeleOp(name = "testing launcher speeds")
+@TeleOp(name = "testing launcher speeds", group = "test")
 public class testLauncherVelocity extends OpMode {
 
     RobotHardware robot;

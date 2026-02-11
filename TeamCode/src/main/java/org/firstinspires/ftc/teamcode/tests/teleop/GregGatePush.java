@@ -5,6 +5,7 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -74,7 +75,7 @@ public class GregGatePush extends OpMode {
 
     private double adjustedServoPower;
 
-    private double gatePushStartTime;
+    private double gatePushStartTime = 0;
 
     private boolean isAtGatePos = true;
     public static double sGatePos = 0.7;
@@ -83,6 +84,8 @@ public class GregGatePush extends OpMode {
     public static double pushDelay = 1500;
 
 
+    public static int liftPos = 6000;
+    public static double liftPow = 0.6;
 
 
     @Override
@@ -147,6 +150,9 @@ public class GregGatePush extends OpMode {
 
         if (!robot.isRedAlliance()) goalYPos = goalXPos;
         robot.gatePush.setPosition(sGatePos);
+        robot.linearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.linearLift.setTargetPosition(0);
+        robot.linearLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);;
     }
     @Override
     public void loop() {
@@ -155,7 +161,7 @@ public class GregGatePush extends OpMode {
         gamePad1Controls();
 
         //if (twoPlayers) gamepad2Controls();
-
+        telemetryM.debug(robot.linearLift.getTargetPosition(), "\n",robot.linearLift.getCurrentPosition());
         telemetryM.update(telemetry);
     }
     private void gamePad1Controls() {
@@ -163,9 +169,18 @@ public class GregGatePush extends OpMode {
         double speed = 1.0 - (0.9 * triggerValue);
         adjustedServoPower = servoPower * speed;
 
-        // Handle driving
         // --- Rotate to clip angle ---
         if (gamepad1.dpad_left) {
+            robot.linearLift.setTargetPosition(liftPos);
+            robot.linearLift.setPower(liftPow);
+        } else if (robot.linearLift.getCurrentPosition() < liftPos/2 && robot.linearLift.getTargetPosition() !=0) {
+            robot.linearLift.setTargetPosition(0);
+            robot.linearLift.setPower(liftPow);
+        }
+
+        // Handle driving
+        // --- Rotate to clip angle ---
+        if (gamepad1.left_trigger > 0.1) {
             //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);
             drive.turnInDirection(physics.getHeadingError(goalXPos, goalYPos));
 //            telemetryM.debug(Math.toDegrees(physics.getHeadingError(144, 0)));
@@ -303,7 +318,6 @@ public class GregGatePush extends OpMode {
     private void stopAllLaunching() {
         robot.launcherR.setPower(0.0);
         robot.launcherL.setPower(0.0);
-        //robot.thirdUpS.setPower(0.0);
         robot.secondUpS.setPower(0.0);
         robot.firstUpS.setPower(0.0);
         robot.intakeS.setPower(0.0);

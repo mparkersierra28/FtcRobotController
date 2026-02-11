@@ -59,6 +59,8 @@ public class Sorter {
         return patterns[currentPattern][patternStep];
     }
 
+    public Obj getPatternColor(int step) {return patterns[currentPattern][(patternStep + step) % 3];}
+
     // ---------------- ROTATION SYSTEM ----------------
 
     public void rotateForward(double motorPower) {
@@ -163,7 +165,7 @@ public class Sorter {
         for (int i = 0; i < slots.length; i++) {
             if (slots[i] == Obj.EMPTY) {
                 emptyIndex = i;
-                break;
+                //break;
             }
         }
 
@@ -229,6 +231,29 @@ public class Sorter {
         advancePattern();
     }
 
+
+    /**
+     * Reset slots so that they don't persist between OpMode runs
+     */
+    public void reset() {
+        slots[0] = Obj.EMPTY;
+        slots[1] = Obj.EMPTY;
+        slots[2] = Obj.EMPTY;
+    }
+
+    public void reset(int intake, int waiting, int exit) {
+        if (intake == 0) slots[0] = Obj.EMPTY;
+        else if (intake == 1) slots[0] = Obj.PURPLE;
+        else if (intake == 2) slots[0] = Obj.GREEN;
+
+        if (waiting == 0) slots[1] = Obj.EMPTY;
+        else if (waiting == 1) slots[1] = Obj.PURPLE;
+        else if (waiting == 2) slots[1] = Obj.GREEN;
+
+        if (exit == 0) slots[2] = Obj.EMPTY;
+        else if (exit == 1) slots[2] = Obj.PURPLE;
+        else if (exit == 2) slots[2] = Obj.GREEN;
+    }
 
 
     // ---------------- GETTERS ----------------

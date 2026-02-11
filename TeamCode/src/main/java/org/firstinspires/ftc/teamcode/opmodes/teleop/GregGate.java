@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.teleop;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,12 +15,13 @@ import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.MecanumDrive;
 import org.firstinspires.ftc.teamcode.software.Physics;
 
+@Disabled
 @Configurable
 @TeleOp(name="Gate Greg", group = "1")
 public class GregGate extends OpMode {
     private RobotHardware robot;
     private MecanumDrive drive;
-    private CameraQR camera;
+    //private CameraQR camera;
     private Physics physics;
 
     public TelemetryManager telemetryM;
@@ -79,7 +81,7 @@ public class GregGate extends OpMode {
         // Get the driving class
         drive = new MecanumDrive(robot);
 
-        camera = new CameraQR(robot);
+        //camera = new CameraQR(robot);
 
         physics = new Physics(robot);
 

@@ -37,16 +37,18 @@ public class GiveItANameConfig {
         robot.odo = hw.get(GoBildaPinpointDriver.class, "odo");
         robot.odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
         robot.odo.setEncoderDirections(
-                GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.FORWARD
+                GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED
         );
-        robot.odo.setOffsets(7.5, 2, DistanceUnit.INCH);
+        robot.odo.setOffsets(-1, -7, DistanceUnit.INCH);
 
-        //robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
+        robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
 
         robot.intakeSensor = hw.get(RevColorSensorV3.class, "intakeSensor");
         //robot.exitSensor = hw.get(RevColorSensorV3.class, "exitSensor");
 
         robot.intakeServo = hw.get(CRServo.class, "intake");
+        robot.gateS = hw.get(Servo.class, "gateS");
+
     }
 }

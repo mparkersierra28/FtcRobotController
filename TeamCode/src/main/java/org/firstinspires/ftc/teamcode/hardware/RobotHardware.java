@@ -56,8 +56,10 @@ public class RobotHardware {
     public DcMotor indexer;
     public DcMotorEx launcher;
     public RevColorSensorV3 intakeSensor;
-    //public Servo gateS;
+    public Servo gateS;
     public CRServo intakeServo;
+
+    public DcMotor linearLift;
 
     // Sensors
     public GoBildaPinpointDriver odo;

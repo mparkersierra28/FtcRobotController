@@ -54,11 +54,13 @@ public class GregConfig {
         robot.intakeS = hw.get(CRServo.class, "intakeS");
         robot.firstUpS = hw.get(CRServo.class, "firstUpS");
         robot.secondUpS = hw.get(CRServo.class, "secondUpS");
-        //robot.thirdUpS = hw.get(CRServo.class, "thirdUpS");
+
         robot.gatePush = hw.get(Servo.class, "thirdUpS");
 
         robot.firstUpS.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.secondUpS.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        robot.linearLift = hw.get(DcMotor.class, "linearLift");
 
         // Sensors
         robot.huskyLens = hw.get(HuskyLens.class, "huskylens");
