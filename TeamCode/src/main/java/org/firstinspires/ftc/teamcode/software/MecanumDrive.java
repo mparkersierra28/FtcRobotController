@@ -25,6 +25,10 @@ public class MecanumDrive {
     private boolean joystickActive;
     private double headingOffset;
 
+    private double lastHeadingUpdate = 0;
+
+    private double HEADING_UPDATE_INTERVAL = 50;
+
     // Constructors
     public MecanumDrive(RobotHardware robot) {
         this.robot = robot;
@@ -77,7 +81,14 @@ public class MecanumDrive {
 
     // --- Field Centric ---
     private void fieldCentricDrive(double strafe, double forward, double rotate) {
-        robot.odo.update();
+        long now = System.currentTimeMillis();
+
+        // Only update odometry every 50ms
+        if (now - lastHeadingUpdate > HEADING_UPDATE_INTERVAL) {
+            robot.odo.update();
+            lastHeadingUpdate = now;
+        }
+
         Pose2D robotPosition = robot.odo.getPosition();
 
         double headingRad = robotPosition.getHeading(AngleUnit.RADIANS);

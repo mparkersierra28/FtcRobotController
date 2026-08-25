@@ -9,6 +9,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
@@ -35,10 +36,10 @@ public class PreloadInShootShort extends OpMode {
 //    public static double intakeX = -41, intakeBY = 36, intakeEY = -3, intakeHeading = 90;
 //    public static double finalX = -56, finalY = 31, finalHeading = -90;
     private double startX = 120, startY = 22, startHeading = 0;
-    private double shootingX = 127, shootingY = 50, shootingHeading = -64;
+    private double shootingX = 117, shootingY = 53, shootingHeading = -72;
     private double intakeX1 = 79, intakeBY1 = 58, intakeEY1 = 19, intakeHeading = 90;
     private double intakeX2 = 55, intakeBY2 = 58, intakeEY2 = 10;
-    private double finalX = 100, finalY = 20, finalHeading = 0;
+    private double finalX = 125, finalY = 53, finalHeading = 0;
 
     private Path launchFirst3, intakeBPath1, intakeEPath1, launchSecond3, intakeBPath2, intakeEPath2, launchThird3, goPark;
 
@@ -88,28 +89,16 @@ public class PreloadInShootShort extends OpMode {
         follower.setStartingPose(new Pose(startX, startY, startHeading));
 
         Pose launchPos = new Pose(shootingX, shootingY);
-        Pose intakeBPos1 = new Pose(intakeX1, intakeBY1);
-        Pose intakeEPos1 = new Pose(intakeX1, intakeEY1);
-        Pose intakeBPos2 = new Pose(intakeX2, intakeBY2);
-        Pose intakeEPos2 = new Pose(intakeX2, intakeEY2);
         Pose parkPos = new Pose(finalX, finalY);
 
         launchFirst3 = makePath(new Pose(startX, startY), launchPos, startHeading, shootingHeading, movVel);
 
-        intakeBPath1 = makePath(launchPos, intakeBPos1, shootingHeading, intakeHeading, intakeVel);
-        intakeEPath1 = makePath(intakeBPos1, intakeEPos1, intakeHeading, intakeHeading, intakeVel);
-        launchSecond3 = makePath(intakeEPos1, launchPos, intakeHeading, shootingHeading, movVel);
-
-        intakeBPath2 = makePath(launchPos, intakeBPos2, shootingHeading, intakeHeading, intakeVel);
-        intakeEPath2 = makePath(intakeBPos2, intakeEPos2, intakeHeading, intakeHeading, intakeVel);
-        launchThird3 = new Path(new BezierCurve(intakeEPos2, intakeBPos2, launchPos));
-        launchThird3.setLinearHeadingInterpolation(Math.toRadians(intakeHeading), Math.toRadians(shootingHeading));
-        launchThird3.setVelocityConstraint(movVel);
         //launchThird3 = makePath(intakeEPos2, launchPos, intakeHeading, shootingHeading, movVel);
 
-        goPark        = new Path(new BezierCurve(launchPos, new Pose(115, 25), parkPos));
-        goPark.setLinearHeadingInterpolation(Math.toRadians(shootingHeading), 0);
-        goPark.setVelocityConstraint(movVel);
+//        goPark        = new Path(new BezierCurve(launchPos, new Pose(115, 25), parkPos));
+//        goPark.setLinearHeadingInterpolation(Math.toRadians(shootingHeading), 0);
+//        goPark.setVelocityConstraint(movVel);
+        goPark        = makePath(launchPos, parkPos, shootingHeading, finalHeading, movVel);
 
         follower.followPath(launchFirst3);
     }

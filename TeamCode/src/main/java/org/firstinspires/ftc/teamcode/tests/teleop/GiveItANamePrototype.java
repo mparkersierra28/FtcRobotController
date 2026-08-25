@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.CameraQR;
 import org.firstinspires.ftc.teamcode.software.GiveItAName.MagazinePositionController;
@@ -30,7 +32,7 @@ public class GiveItANamePrototype extends OpMode {
     public static int launchSmallVel = 1430;
     public static int launchBigVel = 2000;
     public static int launchReallyClose = 1000;
-    public static double magPower = 0.4;
+    public static double magPower = 0.7;
 
     // Menu
     private boolean fieldCentric;
@@ -165,6 +167,12 @@ public class GiveItANamePrototype extends OpMode {
             );
         }
 
+
+        // --- Reset Odo Dir ---
+        if (gamepad1.right_bumper) {
+            robot.odo.setPosition(new Pose2D(DistanceUnit.INCH, 8.5, 72, AngleUnit.RADIANS, 0));
+        }
+
         if (gamepad1.b && !bPressed) {
             runningIntake = !runningIntake;
             if (!runningIntake) {
@@ -208,7 +216,7 @@ public class GiveItANamePrototype extends OpMode {
                     int targetVelocity = gamepad1.dpad_down ? launchBigVel : (gamepad1.dpad_up ? launchReallyClose : launchSmallVel);
                     warmUpLauncher(targetVelocity);   // runs only once
                     warmUpTriggered = true;
-                    if (Math.abs(targetVelocity-robot.launcherR.getVelocity())<=lErrorMargin&&Math.abs(targetVelocity-robot.launcherL.getVelocity())<=lErrorMargin){
+                    if (Math.abs(targetVelocity-robot.launcher.getVelocity())<=lErrorMargin){
                         gamepad1.rumble(500);
                     }
                 }
@@ -263,7 +271,7 @@ public class GiveItANamePrototype extends OpMode {
         if (magazinePos.isBusy()) return true;
 
         if (!processingBalls) {
-            sorter.shootBall(shootMagPow);
+            sorter.shootBall(1);
             processingBalls = true;
         } else {
             processingBalls = false;

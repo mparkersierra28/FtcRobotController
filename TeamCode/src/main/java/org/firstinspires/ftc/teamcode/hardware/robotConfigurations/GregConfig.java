@@ -60,7 +60,11 @@ public class GregConfig {
         robot.firstUpS.setDirection(DcMotorSimple.Direction.REVERSE);
         robot.secondUpS.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        robot.linearLift = hw.get(DcMotor.class, "linearLift");
+        robot.linearLiftL = hw.get(DcMotor.class, "linearLift");
+        robot.linearLiftR = hw.get(DcMotor.class, "Lift_L");
+
+        robot.linearLiftL.setDirection(DcMotorSimple.Direction.REVERSE);
+        robot.linearLiftR.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Sensors
         robot.huskyLens = hw.get(HuskyLens.class, "huskylens");

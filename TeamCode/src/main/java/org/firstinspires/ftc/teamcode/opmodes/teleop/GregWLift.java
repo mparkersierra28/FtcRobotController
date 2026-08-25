@@ -98,9 +98,9 @@ public class GregWLift extends OpMode {
 
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        robot.linearLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.linearLift.setTargetPosition(0);
-        robot.linearLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.linearLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.linearLiftL.setTargetPosition(0);
+        robot.linearLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         telemetry.addData("Status", "Initialized - Panels Connected");
     }
@@ -170,13 +170,13 @@ public class GregWLift extends OpMode {
         // Handle driving
         // --- Rotate to clip angle ---
         if (gamepad1.left_stick_button) {
-            robot.linearLift.setTargetPosition(liftPos);
-            robot.linearLift.setPower(liftPow);
-        } else if (robot.linearLift.getCurrentPosition() > (liftPos/2)) return;
-        else if (robot.linearLift.getTargetPosition() != 0){
-            robot.linearLift.setTargetPosition(0);
-            robot.linearLift.setPower(liftPow);
-        } else if (robot.linearLift.getPower() != 0 && robot.linearLift.getCurrentPosition() == 0 && robot.linearLift.getTargetPosition() == 0) robot.linearLift.setPower(0);
+            robot.linearLiftL.setTargetPosition(liftPos);
+            robot.linearLiftL.setPower(liftPow);
+        } else if (robot.linearLiftL.getCurrentPosition() > (liftPos/2)) return;
+        else if (robot.linearLiftL.getTargetPosition() != 0){
+            robot.linearLiftL.setTargetPosition(0);
+            robot.linearLiftL.setPower(liftPow);
+        } else if (robot.linearLiftL.getPower() != 0 && robot.linearLiftL.getCurrentPosition() == 0 && robot.linearLiftL.getTargetPosition() == 0) robot.linearLiftL.setPower(0);
 
         if (gamepad1.y) {
             //drive.turnToAngle(gamepad1.dpad_down ? clipAngleClose : clipAngleFar);

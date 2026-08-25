@@ -6,6 +6,7 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import com.pedropathing.follower.Follower;
@@ -59,7 +60,8 @@ public class RobotHardware {
     public Servo gateS;
     public CRServo intakeServo;
 
-    public DcMotor linearLift;
+    public DcMotor linearLiftL;
+    public DcMotor linearLiftR;
 
     // Sensors
     public GoBildaPinpointDriver odo;

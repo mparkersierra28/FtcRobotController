@@ -14,9 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.hardware.RobotHardware;
 import org.firstinspires.ftc.teamcode.software.TransferData;
 
-@Disabled
 @Configurable
-@Autonomous(name = "Far Preload", group = "1")
+@Autonomous(name = "Far Preload Pick One Row", group = "1")
 public class FarPreloadShoot extends OpMode {
     private RobotHardware robot;
     private TelemetryManager telemetryM;
@@ -39,7 +38,7 @@ public class FarPreloadShoot extends OpMode {
     public static double startX = 10.15, startY = 57.3, startHeading = 0;
     public static double shootingX = 19.73, shootingY = 58, shootingHeading = -25;
     public static double intakeX = 31.4, intakeBY = 56, intakeEY = 15, intakeHeading = 90;
-    public static double finalX = 35, finalY = 61, finalHeading = 0;
+    public static double finalX = 10.25, finalY = 32, finalHeading = 0;
 
     private Path launchFirst3, intakeBPath, intakeEPath, launchSecond3, goPark;
 
